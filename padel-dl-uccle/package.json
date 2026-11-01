@@ -1,0 +1,14 @@
+{
+  "name": "padel-dl-uccle",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Pilotage du programme padel – David Lloyd Brussels Uccle (Google Sheets + Apps Script)",
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "node scripts/build.js",
+    "test": "node scripts/build.js && node --test tests/*.test.js",
+    "test:e2e": "node scripts/build.js && node tests/e2e-smoke.js && node tests/e2e-flows.js",
+    "serve": "node scripts/serve.js"
+  },
+  "engines": { "node": ">=18" }
+}
