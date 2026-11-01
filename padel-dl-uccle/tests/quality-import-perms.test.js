@@ -115,6 +115,8 @@ test('paramètres initiaux : aucun tarif ni date inventés', () => {
     [['adulte', 60, 25], ['adulte', 90, 35], ['junior', 60, 25], ['junior', 90, 35]]);
   assert.ok(schema.INITIAL_OFFRES.every((o) => o.nb_seances === ''), 'séances fixées par cycle');
   assert.equal(schema.INITIAL_PARAMETRES.find((p) => p.cle === 'montants_tva').valeur, 'TVAC');
-  assert.ok(!schema.INITIAL_PARAMETRES.some((p) => p.categorie === 'heures_pointe'), 'heures de pointe non inventées');
+  const pointe = schema.INITIAL_PARAMETRES.filter((p) => p.categorie === 'heures_pointe');
+  assert.equal(pointe.length, 5, 'lundi à vendredi uniquement');
+  assert.ok(pointe.every((p) => p.valeur === '17:00-21:00' && /Power BI/.test(p.source)), 'définition reprise de l\'export Power BI');
   assert.equal(schema.INITIAL_PARAMETRES.find((p) => p.cle === 'cout_horaire_terrain').valeur, '');
 });

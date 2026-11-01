@@ -43,7 +43,6 @@
       if (r.categorie === 'taux_coach' || (r.categorie === 'objectif' && r.cle === 'taux_penetration')) return;
       add('parametres', r);
     });
-    [1, 2, 3, 4, 5].forEach(function (d) { add('parametres', { id: id('PAR'), categorie: 'heures_pointe', cle: 'soir', reference: String(d), valeur: '17:00-22:00', statut: 'actif', source: FICTIF, libelle: 'Soirée', date_effet: '', date_fin: '', attributs: '', description: '' }); });
     [6, 7].forEach(function (d) { add('parametres', { id: id('PAR'), categorie: 'heures_pointe', cle: 'matin_we', reference: String(d), valeur: '09:00-13:00', statut: 'actif', source: FICTIF, libelle: 'Matinée week-end', date_effet: '', date_fin: '', attributs: '', description: '' }); });
     add('parametres', { id: id('PAR'), categorie: 'vacances', cle: 'automne_2026', reference: '', valeur: 'Congé d\'automne (fictif)', libelle: 'Congé d\'automne', date_effet: '2026-10-19', date_fin: '2026-10-30', statut: 'actif', source: FICTIF, attributs: '', description: 'Dates fictives : encoder le calendrier officiel FWB.' });
 
@@ -250,8 +249,8 @@
     db.satisfaction.filter(function (r) { return r.type_activite === 'tournoi'; }).slice(0, 4).forEach(function (r) { r.evenement_id = t1.id; r.date = t1.date; });
 
     // ---------------------------------------------------------- Indicateurs Power BI (FICTIFS)
-    [['2026-09', { membres_club_total: 2140, membres_padel_actifs: 286, membres_reservants: 241, reservations_terrains: 1310, heures_reservees: 1965, nouveaux_membres_club: 48, nouveaux_membres_padel: 17, nouveaux_joueurs_padel: 22, age_moyen_padel: 41.2, age_moyen_club: 44.8, participants_evenements: 58 }],
-     ['2026-10', { membres_club_total: 2165, membres_padel_actifs: 318, membres_reservants: 266, reservations_terrains: 1402, heures_reservees: 2103, nouveaux_membres_club: 39, nouveaux_membres_padel: 16, nouveaux_joueurs_padel: 19, age_moyen_padel: 40.6, age_moyen_club: 44.9, participants_evenements: 45 }]]
+    [['2026-09', { occupation_terrains_bi: 31.5, participations_reservations: 3410, no_shows: 410, part_resa_membre: 80.2, part_resa_special: 9.1, part_resa_cours: 7.4, part_resa_autre: 3.3, membres_exterieurs: 64, membres_enfants: 48, membres_club_total: 2140, membres_padel_actifs: 286, membres_reservants: 241, reservations_terrains: 1310, heures_reservees: 1965, nouveaux_membres_club: 48, nouveaux_membres_padel: 17, nouveaux_joueurs_padel: 22, age_moyen_padel: 41.2, age_moyen_club: 44.8, participants_evenements: 58 }],
+     ['2026-10', { occupation_terrains_bi: 35.9, participations_reservations: 3720, no_shows: 395, part_resa_membre: 78.8, part_resa_special: 10.5, part_resa_cours: 7.0, part_resa_autre: 3.7, membres_exterieurs: 71, membres_enfants: 52, membres_club_total: 2165, membres_padel_actifs: 318, membres_reservants: 266, reservations_terrains: 1402, heures_reservees: 2103, nouveaux_membres_club: 39, nouveaux_membres_padel: 16, nouveaux_joueurs_padel: 19, age_moyen_padel: 40.6, age_moyen_club: 44.9, participants_evenements: 45 }]]
       .forEach(function (mth) {
         var from = mth[0] + '-01', to = u.endOfMonth(from);
         Object.keys(mth[1]).forEach(function (k) { add('indicateurs', { id: id('KPI'), date_debut: from, date_fin: to, indicateur: k, segment: 'total', valeur: mth[1][k], source: 'Power BI (FICTIF – démo)', commentaire: '' }); });

@@ -312,3 +312,4 @@ pre.code { background: var(--line-2); padding: 10px; border-radius: var(--radius
 .report-picker .mini-card h3 { font-size: .9rem; }
 .report-picker .mini-card p { font-size: .76rem; margin: 0; }
 @media (min-width: 960px) { .report-picker { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.form-section { font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 6px 0 -4px; }

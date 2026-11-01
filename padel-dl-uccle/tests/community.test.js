@@ -68,3 +68,15 @@ test('programme gratuit : l\'atteinte globale ne porte que sur les activités av
   assert.ok(Math.abs(fp.total.atteinte.v - 2 / (8 * 30 / 7)) < 0.01);
   assert.deepEqual(fp.total.sansObjectif, [], 'Padel Squad absent du jeu de test');
 });
+
+test('indicateurs Power BI : occupation officielle et taux de no-show', () => {
+  const c = withCommunity();
+  c.db.indicateurs.push(
+    { id: 'B1', date_debut: '2026-09-01', date_fin: '2026-09-30', indicateur: 'occupation_terrains_bi', segment: 'total', valeur: 42.5 },
+    { id: 'B2', date_debut: '2026-09-01', date_fin: '2026-09-30', indicateur: 'participations_reservations', segment: 'total', valeur: 4000 },
+    { id: 'B3', date_debut: '2026-09-01', date_fin: '2026-09-30', indicateur: 'no_shows', segment: 'total', valeur: 600 });
+  const d = community.clubIndicators(c, SEPT).derived;
+  assert.ok(Math.abs(d.occupationBI.v - 0.425) < 1e-9);
+  assert.ok(Math.abs(d.noShowBI.v - 0.15) < 1e-9);
+  assert.equal(d.occupationHeuresBI.v, null, 'heures non transmises : pas de recalcul');
+});

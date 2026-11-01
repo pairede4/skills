@@ -122,7 +122,7 @@
   function indicatorDefs(ctx) {
     return ctx.params.filter(function (p) { return p.categorie === 'indicateur_club'; }).map(function (p) {
       var a = calc.parseAttrs(p.attributs);
-      return { code: p.cle, label: p.libelle || p.valeur || p.cle, unite: a.unite || '', agregation: a.agregation === 'somme' ? 'somme' : 'dernier' };
+      return { code: p.cle, label: p.libelle || p.valeur || p.cle, unite: a.unite || '', agregation: a.agregation === 'somme' ? 'somme' : 'dernier', groupe: a.groupe || 'Autres' };
     });
   }
 
@@ -158,6 +158,10 @@
     var derived = {
       penetration: u.ratio(V('membres_padel_actifs'), V('membres_club_total'), 'Taux de pénétration'),
       penetrationPowerBI: V('taux_penetration_powerbi').v === null ? V('taux_penetration_powerbi') : u.known(V('taux_penetration_powerbi').v / 100),
+      occupationBI: V('occupation_terrains_bi').v === null ? V('occupation_terrains_bi') : u.known(V('occupation_terrains_bi').v / 100),
+      occupationHeuresBI: u.ratio(V('heures_occupees_bi'), V('heures_disponibles_bi'), 'Occupation (heures Power BI)'),
+      noShowBI: u.ratio(V('no_shows'), V('participations_reservations'), 'No-shows Power BI'),
+      participationsParMembre: u.ratio(V('participations_reservations'), V('membres_padel_actifs'), 'Participations par membre'),
       tauxReservants: u.ratio(V('membres_reservants'), V('membres_club_total'), 'Part des membres qui réservent'),
       penetrationNouveaux: u.ratio(V('nouveaux_membres_padel'), V('nouveaux_membres_club'), 'Pénétration des nouveaux membres'),
       reservationsParReservant: u.ratio(V('reservations_terrains'), V('membres_reservants'), 'Réservations par membre'),

@@ -59,7 +59,7 @@
       '1_semaine': 'Une fois par semaine', '2_plus_semaine': 'Deux fois ou plus par semaine'
     },
     source_satisfaction: { formulaire: 'Formulaire app', papier: 'Papier', import: 'Import' },
-    segment_kpi: { total: 'Total', adulte: 'Adultes', junior: 'Juniors' }
+    segment_kpi: { total: 'Total', semaine: 'Semaine (lun-ven)', weekend: 'Week-end', pointe: 'Heures de pointe', creuse: 'Heures creuses', adulte: 'Adultes', junior: 'Juniors' }
   };
 
   function c(n, t, req, label, extra) {
@@ -509,19 +509,33 @@
     });
     // Indicateurs club (Power BI). attributs : unite ; agregation = dernier (stock, ex. nombre de membres) ou somme (flux).
     [
-      ['membres_club_total', 'Membres du club (total)', 'unite=membres; agregation=dernier'],
-      ['membres_padel_actifs', 'Membres ayant joué au padel sur la période', 'unite=membres; agregation=dernier'],
-      ['membres_reservants', 'Membres ayant réservé un terrain sur la période', 'unite=membres; agregation=dernier'],
-      ['reservations_terrains', 'Réservations de terrains', 'unite=réservations; agregation=somme'],
-      ['heures_reservees', 'Heures de terrain réservées', 'unite=heures; agregation=somme'],
-      ['nouveaux_membres_club', 'Nouveaux membres du club', 'unite=membres; agregation=somme'],
-      ['nouveaux_membres_padel', 'Nouveaux membres ayant joué au padel', 'unite=membres; agregation=somme'],
-      ['nouveaux_joueurs_padel', 'Membres existants ayant commencé le padel', 'unite=membres; agregation=somme'],
-      ['age_moyen_padel', 'Âge moyen des joueurs de padel', 'unite=ans; agregation=dernier'],
-      ['age_moyen_club', 'Âge moyen des membres du club', 'unite=ans; agregation=dernier'],
-      ['participants_evenements', 'Participants aux événements padel', 'unite=personnes; agregation=somme'],
-      ['taux_penetration_powerbi', 'Taux de pénétration (calculé par Power BI)', 'unite=pourcent; agregation=dernier']
-    ].forEach(function (k) { p('indicateur_club', k[0], k[1], { libelle: k[1], attributs: k[2], source: 'Liste proposée – à aligner sur Power BI' }); });
+      // groupe ; nom dans Power BI entre crochets quand il existe (rapport « Court Occupancy », filtre Club = Brussels, Sport = Padel)
+      ['occupation_terrains_bi', 'Occupation des terrains [Occupancy (Court)]', 'unite=pourcent; agregation=dernier; groupe=Occupation'],
+      ['heures_disponibles_bi', 'Heures disponibles [Hours Available]', 'unite=heures; agregation=somme; groupe=Occupation'],
+      ['heures_occupees_bi', 'Heures occupées [Hours Occupied]', 'unite=heures; agregation=somme; groupe=Occupation'],
+      ['reservations_terrains', 'Réservations de terrains [Total Bookings]', 'unite=réservations; agregation=somme; groupe=Réservations'],
+      ['participations_reservations', 'Participations aux réservations [Booking Attendances]', 'unite=participations; agregation=somme; groupe=Réservations'],
+      ['no_shows', 'No-shows [No Shows]', 'unite=participations; agregation=somme; groupe=Réservations'],
+      ['part_resa_membre', 'Part des réservations « member » [Bookings by Type]', 'unite=pourcent; agregation=dernier; groupe=Réservations'],
+      ['part_resa_special', 'Part des réservations « special »', 'unite=pourcent; agregation=dernier; groupe=Réservations'],
+      ['part_resa_cours', 'Part des réservations « class/course »', 'unite=pourcent; agregation=dernier; groupe=Réservations'],
+      ['part_resa_autre', 'Part des autres types de réservation', 'unite=pourcent; agregation=dernier; groupe=Réservations'],
+      ['membres_padel_actifs', 'Membres uniques ayant joué au padel [Unique Members]', 'unite=membres; agregation=dernier; groupe=Membres'],
+      ['membres_reservants', 'Membres ayant réservé un terrain', 'unite=membres; agregation=dernier; groupe=Membres'],
+      ['membres_exterieurs', 'Membres d\'autres clubs [Away Members]', 'unite=membres; agregation=dernier; groupe=Membres'],
+      ['membres_enfants', 'Enfants [Child Members]', 'unite=membres; agregation=dernier; groupe=Membres'],
+      ['membres_club_total', 'Membres du club (total)', 'unite=membres; agregation=dernier; groupe=Membres'],
+      ['nouveaux_membres_club', 'Nouveaux membres du club', 'unite=membres; agregation=somme; groupe=Membres'],
+      ['nouveaux_membres_padel', 'Nouveaux membres ayant joué au padel', 'unite=membres; agregation=somme; groupe=Membres'],
+      ['nouveaux_joueurs_padel', 'Membres existants ayant commencé le padel', 'unite=membres; agregation=somme; groupe=Membres'],
+      ['age_moyen_padel', 'Âge moyen des joueurs de padel', 'unite=ans; agregation=dernier; groupe=Profil'],
+      ['age_moyen_club', 'Âge moyen des membres du club', 'unite=ans; agregation=dernier; groupe=Profil'],
+      ['heures_reservees', 'Heures de terrain réservées', 'unite=heures; agregation=somme; groupe=Occupation'],
+      ['participants_evenements', 'Participants aux événements padel', 'unite=personnes; agregation=somme; groupe=Profil'],
+      ['taux_penetration_powerbi', 'Taux de pénétration (si calculé par Power BI)', 'unite=pourcent; agregation=dernier; groupe=Membres']
+    ].forEach(function (k) { p('indicateur_club', k[0], k[1], { libelle: k[1], attributs: k[2], source: 'Noms alignés sur le rapport Power BI « Court Occupancy » (exports du 31/10/2026)' }); });
+    // Heures de pointe telles que définies par Power BI (Peak Start 17:00 – Peak End 20:59:59, jours de semaine).
+    [1, 2, 3, 4, 5].forEach(function (d) { p('heures_pointe', 'pointe_bi', '17:00-21:00', { reference: String(d), libelle: 'Pointe (définition Power BI)', source: 'Power BI « Racquets – Court Usage » : Peak Start 17:00, Peak End 20:59:59 (semaine)', description: 'Pointe du week-end non visible dans l\'export : à compléter.' }); });
     // Objectifs du programme gratuit (séances par semaine), confirmés par Anthony le 01/11/2026.
     [['padel_taster', '4', '4 Padel Tasters d\'1 h par semaine'], ['afterwork', '2', '2 Afterworks d\'1 h 30 par semaine'], ['new_to_padel', '2', '2 New to Padel Social Sessions d\'1 h par semaine']]
       .forEach(function (o) { p('objectif', 'seances_semaine', o[1], { reference: o[0], libelle: o[2], date_effet: '2026-08-31', source: 'Confirmé par Anthony (01/11/2026)' }); });

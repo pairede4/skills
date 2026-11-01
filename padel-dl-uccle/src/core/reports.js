@@ -81,6 +81,7 @@
       if (r.remplissage.v !== null && r.remplissage.v < 0.6 && r.realisees >= 3) reco.push('Relayer davantage les « ' + r.label + ' » (application, WhatsApp, accueil) : remplissage de ' + u.fmtPct(r.remplissage.v, 0) + '.');
     });
     var ci = CM.clubIndicators(ctx, f);
+    if (ci.derived.noShowBI.v !== null && ci.derived.noShowBI.v > 0.25) { out.push('No-shows Power BI : ' + u.fmtPct(ci.derived.noShowBI.v, 0) + ' des participations aux réservations.'); reco.push('Vérifier avec la réception comment les présences sont pointées (un taux de no-show très élevé peut venir d\'un pointage incomplet), puis rappeler la règle des 24 h et des blâmes.'); }
     if (ci.derived.penetration.v !== null) {
       out.push('Taux de pénétration padel : ' + u.fmtPct(ci.derived.penetration.v) + (ci.objectifPenetration !== null ? ' (objectif ' + u.fmtPct(ci.objectifPenetration, 0) + ')' : '') + '.');
       if (ci.objectifPenetration !== null && ci.derived.penetration.v < ci.objectifPenetration) reco.push('Cibler les nouveaux membres et les non-joueurs avec des Padel Tasters dédiés pour rapprocher la pénétration de l\'objectif.');
@@ -98,8 +99,10 @@
   function communityKpis(ci, prev) {
     var d = ci.derived, v = ci.values, pd = prev && prev.derived, pv = prev && prev.values;
     function V(k) { return v[k] || u.missing(k); }
-    return [kpi('Taux de pénétration padel', d.penetration, P, pd && pd.penetration, { note: ci.objectifPenetration !== null ? 'objectif ' + u.fmtPct(ci.objectifPenetration, 0) : null }),
-      kpi('Membres actifs padel', V('membres_padel_actifs'), N, pv && pv.membres_padel_actifs),
+    return [kpi('Occupation des terrains (Power BI)', d.occupationBI, P, pd && pd.occupationBI),
+      kpi('Membres uniques qui jouent (Power BI)', V('membres_padel_actifs'), N, pv && pv.membres_padel_actifs),
+      kpi('Taux de no-show (Power BI)', d.noShowBI, P, pd && pd.noShowBI, { inverse: true }),
+      kpi('Taux de pénétration padel', d.penetration, P, pd && pd.penetration, { note: ci.objectifPenetration !== null ? 'objectif ' + u.fmtPct(ci.objectifPenetration, 0) : null }),
       kpi('Membres qui réservent un terrain', V('membres_reservants'), N, pv && pv.membres_reservants),
       kpi('Réservations de terrains', V('reservations_terrains'), N, pv && pv.reservations_terrains),
       kpi('Nouveaux membres qui jouent au padel', d.penetrationNouveaux, P, pd && pd.penetrationNouveaux),

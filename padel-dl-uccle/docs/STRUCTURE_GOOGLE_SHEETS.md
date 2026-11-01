@@ -477,7 +477,7 @@ Clé de détection des doublons : `indicateur + segment + date_debut + date_fin`
 | `date_debut` | Début de la période | Date (AAAA-MM-JJ) | Oui |  |  |
 | `date_fin` | Fin de la période | Date (AAAA-MM-JJ) | Oui |  |  |
 | `indicateur` | Indicateur | Liste de valeurs | Oui | valeurs configurables (Paramètres → `indicateur_club`) |  |
-| `segment` | Segment | Liste de valeurs | Oui | valeurs : `total`, `adulte`, `junior` |  |
+| `segment` | Segment | Liste de valeurs | Oui | valeurs : `total`, `semaine`, `weekend`, `pointe`, `creuse`, `adulte`, `junior` |  |
 | `valeur` | Valeur | Nombre décimal | Oui |  |  |
 | `source` | Source | Texte | Non | Ex. Power BI – rapport Membres, export du 05/12/2026. |  |
 | `commentaire` | Commentaire | Texte | Non |  |  |
@@ -573,18 +573,34 @@ Chargées par `setupSpreadsheet()` depuis le cadrage du 01/11/2026. Les valeurs 
 | type_activite | `padel_physical` |  | Padel + Physical Training | Cadrage 01/11/2026 – Ponctuel ; anciennes références à ne pas généraliser. |
 | type_activite | `clinic` |  | Clinic | Cadrage 01/11/2026 – Pas encore actives : ne rien annoncer avant publication. (archivé) |
 | type_activite | `cours_prive` |  | Cours privé (hors P&L) | Cadrage 01/11/2026 |
-| indicateur_club | `membres_club_total` |  | Membres du club (total) | Liste proposée – à aligner sur Power BI |
-| indicateur_club | `membres_padel_actifs` |  | Membres ayant joué au padel sur la période | Liste proposée – à aligner sur Power BI |
-| indicateur_club | `membres_reservants` |  | Membres ayant réservé un terrain sur la période | Liste proposée – à aligner sur Power BI |
-| indicateur_club | `reservations_terrains` |  | Réservations de terrains | Liste proposée – à aligner sur Power BI |
-| indicateur_club | `heures_reservees` |  | Heures de terrain réservées | Liste proposée – à aligner sur Power BI |
-| indicateur_club | `nouveaux_membres_club` |  | Nouveaux membres du club | Liste proposée – à aligner sur Power BI |
-| indicateur_club | `nouveaux_membres_padel` |  | Nouveaux membres ayant joué au padel | Liste proposée – à aligner sur Power BI |
-| indicateur_club | `nouveaux_joueurs_padel` |  | Membres existants ayant commencé le padel | Liste proposée – à aligner sur Power BI |
-| indicateur_club | `age_moyen_padel` |  | Âge moyen des joueurs de padel | Liste proposée – à aligner sur Power BI |
-| indicateur_club | `age_moyen_club` |  | Âge moyen des membres du club | Liste proposée – à aligner sur Power BI |
-| indicateur_club | `participants_evenements` |  | Participants aux événements padel | Liste proposée – à aligner sur Power BI |
-| indicateur_club | `taux_penetration_powerbi` |  | Taux de pénétration (calculé par Power BI) | Liste proposée – à aligner sur Power BI |
+| indicateur_club | `occupation_terrains_bi` |  | Occupation des terrains [Occupancy (Court)] | Noms alignés sur le rapport Power BI « Court Occupancy » (exports du 31/10/2026) |
+| indicateur_club | `heures_disponibles_bi` |  | Heures disponibles [Hours Available] | Noms alignés sur le rapport Power BI « Court Occupancy » (exports du 31/10/2026) |
+| indicateur_club | `heures_occupees_bi` |  | Heures occupées [Hours Occupied] | Noms alignés sur le rapport Power BI « Court Occupancy » (exports du 31/10/2026) |
+| indicateur_club | `reservations_terrains` |  | Réservations de terrains [Total Bookings] | Noms alignés sur le rapport Power BI « Court Occupancy » (exports du 31/10/2026) |
+| indicateur_club | `participations_reservations` |  | Participations aux réservations [Booking Attendances] | Noms alignés sur le rapport Power BI « Court Occupancy » (exports du 31/10/2026) |
+| indicateur_club | `no_shows` |  | No-shows [No Shows] | Noms alignés sur le rapport Power BI « Court Occupancy » (exports du 31/10/2026) |
+| indicateur_club | `part_resa_membre` |  | Part des réservations « member » [Bookings by Type] | Noms alignés sur le rapport Power BI « Court Occupancy » (exports du 31/10/2026) |
+| indicateur_club | `part_resa_special` |  | Part des réservations « special » | Noms alignés sur le rapport Power BI « Court Occupancy » (exports du 31/10/2026) |
+| indicateur_club | `part_resa_cours` |  | Part des réservations « class/course » | Noms alignés sur le rapport Power BI « Court Occupancy » (exports du 31/10/2026) |
+| indicateur_club | `part_resa_autre` |  | Part des autres types de réservation | Noms alignés sur le rapport Power BI « Court Occupancy » (exports du 31/10/2026) |
+| indicateur_club | `membres_padel_actifs` |  | Membres uniques ayant joué au padel [Unique Members] | Noms alignés sur le rapport Power BI « Court Occupancy » (exports du 31/10/2026) |
+| indicateur_club | `membres_reservants` |  | Membres ayant réservé un terrain | Noms alignés sur le rapport Power BI « Court Occupancy » (exports du 31/10/2026) |
+| indicateur_club | `membres_exterieurs` |  | Membres d'autres clubs [Away Members] | Noms alignés sur le rapport Power BI « Court Occupancy » (exports du 31/10/2026) |
+| indicateur_club | `membres_enfants` |  | Enfants [Child Members] | Noms alignés sur le rapport Power BI « Court Occupancy » (exports du 31/10/2026) |
+| indicateur_club | `membres_club_total` |  | Membres du club (total) | Noms alignés sur le rapport Power BI « Court Occupancy » (exports du 31/10/2026) |
+| indicateur_club | `nouveaux_membres_club` |  | Nouveaux membres du club | Noms alignés sur le rapport Power BI « Court Occupancy » (exports du 31/10/2026) |
+| indicateur_club | `nouveaux_membres_padel` |  | Nouveaux membres ayant joué au padel | Noms alignés sur le rapport Power BI « Court Occupancy » (exports du 31/10/2026) |
+| indicateur_club | `nouveaux_joueurs_padel` |  | Membres existants ayant commencé le padel | Noms alignés sur le rapport Power BI « Court Occupancy » (exports du 31/10/2026) |
+| indicateur_club | `age_moyen_padel` |  | Âge moyen des joueurs de padel | Noms alignés sur le rapport Power BI « Court Occupancy » (exports du 31/10/2026) |
+| indicateur_club | `age_moyen_club` |  | Âge moyen des membres du club | Noms alignés sur le rapport Power BI « Court Occupancy » (exports du 31/10/2026) |
+| indicateur_club | `heures_reservees` |  | Heures de terrain réservées | Noms alignés sur le rapport Power BI « Court Occupancy » (exports du 31/10/2026) |
+| indicateur_club | `participants_evenements` |  | Participants aux événements padel | Noms alignés sur le rapport Power BI « Court Occupancy » (exports du 31/10/2026) |
+| indicateur_club | `taux_penetration_powerbi` |  | Taux de pénétration (si calculé par Power BI) | Noms alignés sur le rapport Power BI « Court Occupancy » (exports du 31/10/2026) |
+| heures_pointe | `pointe_bi` | 1 | 17:00-21:00 | Power BI « Racquets – Court Usage » : Peak Start 17:00, Peak End 20:59:59 (semaine) – Pointe du week-end non visible dans l'export : à compléter. |
+| heures_pointe | `pointe_bi` | 2 | 17:00-21:00 | Power BI « Racquets – Court Usage » : Peak Start 17:00, Peak End 20:59:59 (semaine) – Pointe du week-end non visible dans l'export : à compléter. |
+| heures_pointe | `pointe_bi` | 3 | 17:00-21:00 | Power BI « Racquets – Court Usage » : Peak Start 17:00, Peak End 20:59:59 (semaine) – Pointe du week-end non visible dans l'export : à compléter. |
+| heures_pointe | `pointe_bi` | 4 | 17:00-21:00 | Power BI « Racquets – Court Usage » : Peak Start 17:00, Peak End 20:59:59 (semaine) – Pointe du week-end non visible dans l'export : à compléter. |
+| heures_pointe | `pointe_bi` | 5 | 17:00-21:00 | Power BI « Racquets – Court Usage » : Peak Start 17:00, Peak End 20:59:59 (semaine) – Pointe du week-end non visible dans l'export : à compléter. |
 | objectif | `seances_semaine` | padel_taster | 4 | Confirmé par Anthony (01/11/2026) |
 | objectif | `seances_semaine` | afterwork | 2 | Confirmé par Anthony (01/11/2026) |
 | objectif | `seances_semaine` | new_to_padel | 2 | Confirmé par Anthony (01/11/2026) |

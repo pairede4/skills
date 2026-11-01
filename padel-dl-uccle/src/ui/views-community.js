@@ -21,6 +21,10 @@
     var d = cur.derived, v = cur.values, pd = prev ? prev.derived : null, pv = prev ? prev.values : null;
     var obj = cur.objectifPenetration;
     var cards = [
+      UI.kpi({ label: 'Occupation des terrains (Power BI)', m: d.occupationBI, fmt: 'pct', prev: pd && pd.occupationBI, help: 'Occupancy (Court) du rapport Power BI, filtre Club = Brussels, Sport = Padel' }),
+      UI.kpi({ label: 'Membres uniques qui jouent', m: v.membres_padel_actifs || u.missing('non paramétré'), prev: pv && pv.membres_padel_actifs, help: 'Unique Members (Power BI)',
+        sub: d.participationsParMembre.v !== null ? u.fmtNum(d.participationsParMembre.v, 1) + ' participations par membre' : '' }),
+      UI.kpi({ label: 'No-shows (Power BI)', m: d.noShowBI, fmt: 'pct', prev: pd && pd.noShowBI, inverse: true, sub: v.no_shows && v.no_shows.v !== null ? u.fmtNum(v.no_shows.v, 0) + ' sur ' + u.fmtNum(v.participations_reservations.v, 0) + ' participations' : '' }),
       UI.kpi({ label: 'Taux de pénétration padel', m: d.penetration, fmt: 'pct', prev: pd && pd.penetration, help: 'Membres ayant joué au padel ÷ membres du club (Power BI)',
         sub: obj !== null ? 'objectif ' + u.fmtPct(obj, 0) : (d.penetrationPowerBI.v !== null ? 'Power BI : ' + u.fmtPct(d.penetrationPowerBI.v) : '') }),
       UI.kpi({ label: 'Membres qui réservent un terrain', m: v.membres_reservants || u.missing('non paramétré'), prev: pv && pv.membres_reservants, sub: d.tauxReservants.v !== null ? u.fmtPct(d.tauxReservants.v) + ' des membres du club' : '' }),
@@ -28,7 +32,8 @@
       UI.kpi({ label: 'Nouveaux membres qui jouent', m: d.penetrationNouveaux, fmt: 'pct', prev: pd && pd.penetrationNouveaux, help: 'Nouveaux membres ayant joué au padel ÷ nouveaux membres du club' })
     ];
     if (!compact) cards = cards.concat([
-      UI.kpi({ label: 'Membres actifs padel', m: v.membres_padel_actifs || u.missing('non paramétré'), prev: pv && pv.membres_padel_actifs }),
+      UI.kpi({ label: 'Membres d\'autres clubs', m: v.membres_exterieurs || u.missing('non paramétré'), prev: pv && pv.membres_exterieurs, help: 'Away Members (Power BI)' }),
+      UI.kpi({ label: 'Enfants', m: v.membres_enfants || u.missing('non paramétré'), prev: pv && pv.membres_enfants, help: 'Child Members (Power BI)' }),
       UI.kpi({ label: 'Membres du club', m: v.membres_club_total || u.missing('non paramétré'), prev: pv && pv.membres_club_total }),
       UI.kpi({ label: 'Âge moyen des joueurs', m: v.age_moyen_padel || u.missing('non paramétré'), fmt: unitFmt('ans'), sub: v.age_moyen_club && v.age_moyen_club.v !== null ? 'club : ' + u.fmtNum(v.age_moyen_club.v, 1) + ' ans' : '' }),
       UI.kpi({ label: 'Participation aux événements', m: d.participationEvenements, fmt: 'pct', help: 'Participants aux événements ÷ membres actifs padel' }),
@@ -63,6 +68,9 @@
       (a.can('imports.run') ? '<a class="btn ghost" href="#/imports">' + UI.icon('upload', 16) + '<span>Importer un export</span></a>' : '') + '</div>';
     if (!hasPBI) html += UI.notice('<strong>Aucun chiffre Power BI encodé.</strong> Le taux de pénétration, le nombre de membres qui réservent, les réservations et l\'âge moyen restent « donnée indisponible » jusqu\'à la première saisie. Rien n\'est estimé.', 'warn');
     html += '<div class="kpi-group"><h3>Pénétration et réservations (Power BI)</h3>' + UI.communityKpis(ci, cp) + '</div>';
+    var types = [['part_resa_membre', 'Membres (« member »)'], ['part_resa_special', '« special »'], ['part_resa_cours', 'Cours / class'], ['part_resa_autre', 'Autres']];
+    if (types.some(function (t) { return ci.values[t[0]] && ci.values[t[0]].v !== null; }))
+      html += UI.card('Réservations par type (Power BI)', UI.bars(types.map(function (t) { var m = ci.values[t[0]] || u.missing(''); return { label: t[1], v: m.v === null ? null : m.v / 100, display: UI.measure(m.v === null ? m : u.known(m.v / 100), 'pct') }; }), { max: 1 }));
     html += '<div class="kpi-group"><h3>Programme gratuit (' + u.fmtNum(fp.weeks, 1) + ' semaine(s) écoulée(s))</h3><div class="kpi-grid">' +
       UI.kpi({ label: 'Séances réalisées / objectif', m: fp.total.realisees, sub: 'objectif : ' + (fp.total.objectif.v === null ? u.INDISPO : u.fmtNum(fp.total.objectif.v, 0)) }) +
       UI.kpi({ label: 'Atteinte de l\'objectif', m: fp.total.atteinte, fmt: 'pct', sub: fp.total.sansObjectif.length ? e('Sans objectif : ' + fp.total.sansObjectif.join(', ')) : '' }) +
@@ -96,8 +104,13 @@
     var body = '<form class="form-grid" id="pbi-form"><label class="field"><span>Mois</span><input class="input" type="month" name="mois" value="' + prevMonth + '" required></label>' +
       '<label class="field"><span>Segment</span><select class="input" name="segment">' + Object.keys(schema.ENUMS.segment_kpi).map(function (k) { return '<option value="' + k + '">' + schema.ENUMS.segment_kpi[k] + '</option>'; }).join('') + '</select></label>' +
       '<label class="field full"><span>Source</span><input class="input" name="source" value="Power BI"></label>' +
-      defs.map(function (dd) { return '<label class="field"><span>' + e(dd.label) + '</span><input class="input" type="text" inputmode="decimal" name="k-' + e(dd.code) + '" placeholder="' + e(dd.unite) + '"><small class="help">' + (dd.agregation === 'somme' ? 'Total du mois' : 'Valeur à la fin du mois') + '</small></label>'; }).join('') +
-      '</form><p class="muted sm">Laissez vide ce que Power BI ne donne pas : la case restera « inconnue », jamais zéro. Une valeur déjà saisie pour ce mois est remplacée.</p><div class="form-errors" role="alert"></div>';
+      (function () {
+        var groups = {}, order = [];
+        defs.forEach(function (dd) { var g = dd.groupe || 'Autres'; if (!groups[g]) { groups[g] = []; order.push(g); } groups[g].push(dd); });
+        return order.map(function (g) { return '<h3 class="full form-section">' + e(g) + '</h3>' + groups[g].map(field).join(''); }).join('');
+      })() +
+      '</form><p class="muted sm">Pourcentages : saisir 42,5 pour 42,5 %. Laissez vide ce que Power BI ne donne pas : la case restera « inconnue », jamais zéro. Une valeur déjà saisie pour ce mois est remplacée.</p><div class="form-errors" role="alert"></div>';
+    function field(dd) { return '<label class="field"><span>' + e(dd.label) + '</span><input class="input" type="text" inputmode="decimal" name="k-' + e(dd.code) + '" placeholder="' + e(dd.unite) + '"><small class="help">' + (dd.agregation === 'somme' ? 'Total du mois' : 'Valeur du mois') + '</small></label>'; }
     var m = UI.modal('Chiffres Power BI du mois', body, { wide: true, footer: '<span class="spacer"></span>' + UI.btn('Annuler', 'modal-close', { cls: 'ghost' }) + UI.btn('Enregistrer', 'pbi-save', { cls: 'primary', icon: 'check' }) });
     function fill() {
       var f = m.querySelector('#pbi-form'), mo = f.mois.value; if (!mo) return;
