@@ -796,7 +796,7 @@ pre.code { background: var(--line-2); padding: 10px; border-radius: var(--radius
         c('terrain_id', 'ref', false, 'Terrain', { ref: 'terrains' }),
         c('niveau', 'int', false, 'Niveau', { min: 1, max: 8 }),
         c('capacite', 'int', false, 'Capacité'),
-        c('nb_seances', 'int', false, 'Séances prévues (si différent de l\'offre)'),
+        c('nb_seances', 'int', false, 'Nombre de séances du cycle', { help: 'Cycles flexibles : idéalement 15 ou 20. Obligatoire si l\'offre ne le fixe pas.' }),
         c('statut', 'enum', true, 'Statut', { enumName: 'statut_cycle' }),
         c('commentaire', 'longtext', false, 'Commentaire')
       ]
@@ -1069,7 +1069,7 @@ pre.code { background: var(--line-2); padding: 10px; border-radius: var(--radius
       rows.push(r);
     }
     p('general', 'nom_club', 'David Lloyd Brussels Uccle');
-    p('general', 'date_ouverture_indoor', '', { source: 'À FOURNIR', description: 'Date exacte d\'ouverture des 3 terrains indoor (août 2026). Début de l\'historique.' });
+    p('general', 'date_ouverture_indoor', '2026-08-31', { source: 'Confirmé par Anthony (01/11/2026)', description: 'Ouverture des 3 terrains indoor. Début de l\'historique.' });
     p('general', 'date_debut_historique', '', { description: 'Vide = date d\'ouverture indoor.' });
     p('general', 'duree_creneau_libre_min', '90', { description: 'Réservation libre : 1 h 30, jusqu\'à 4 joueurs.' });
     p('general', 'delai_conversion_taster_jours', '14', { description: 'Conversion Taster : autre activité dans les N jours.' });
@@ -1077,9 +1077,10 @@ pre.code { background: var(--line-2); padding: 10px; border-radius: var(--radius
     p('general', 'inclure_cours_prives', 'non', { description: 'Cours privés d\'Anthony exclus du P&L (paiement direct).' });
     p('general', 'inclure_cout_terrains', 'non', { description: 'Coût théorique des terrains exclu sauf activation explicite.' });
     p('general', 'cout_horaire_terrain', '', { source: 'Non fourni', description: 'Utilisé seulement si inclure_cout_terrains = oui.' });
-    p('general', 'montants_tva', '', { source: 'À CONFIRMER', description: 'HTVA ou TVAC : à confirmer avant tout usage comptable.' });
+    p('general', 'montants_tva', 'TVAC', { source: 'Confirmé par Anthony (01/11/2026)', description: 'Tous les montants sont saisis TVAC ; aucun retraitement de TVA.' });
+    p('general', 'nb_seances_cycle_conseille', '15 ou 20', { source: 'Confirmé par Anthony (01/11/2026)', description: 'Cycles flexibles : le nombre de séances se fixe par cycle (idéalement 15 ou 20).' });
     p('general', 'seuil_echantillon_nps', '30', { source: 'Proposition', description: 'En dessous, le NPS est signalé comme peu fiable.' });
-    p('taux_coach', 'taux_horaire', '35', { reference: '(ID de Gilles)', libelle: 'Gilles', source: 'Cadrage : 35 €/h à confirmer comme valeur initiale', description: 'Remplacer la référence par l\'ID utilisateur de Gilles et renseigner la date d\'effet.' });
+    p('taux_coach', 'taux_horaire', '35', { reference: 'USR-GILLES', libelle: 'Gilles', date_effet: '2026-08-31', source: 'Confirmé par Anthony (01/11/2026) : seul coach, 35 €/h', description: 'Taux de Gilles depuis l\'ouverture. Un nouveau taux s\'ajoute avec sa date d\'effet.' });
     var niveaux = [['1', 'Rookie', '-'], ['2', 'Control', '0,5-1,2'], ['3', 'Strategy', '1,2-2,0'], ['4', 'Performance', '2,0-2,8'], ['5', 'Challenge', '2,8-3,6'], ['6', 'Competition P300', '3,6-4,4'], ['7', 'Competition P400/P500', '4,4-5,2'], ['8', 'Elite', '5,2+']];
     niveaux.forEach(function (n) { p('niveau', n[0], n[1], { libelle: n[1], attributs: 'playtomic=' + n[2] }); });
     var types = [
@@ -1107,7 +1108,18 @@ pre.code { background: var(--line-2); padding: 10px; border-radius: var(--radius
     return rows;
   })();
 
-  return { ENUMS: ENUMS, SHEETS: SHEETS, META: META, sheet: sheet, col: col, headers: headers, INITIAL_PARAMETRES: INITIAL_PARAMETRES };
+  /** Offres initiales confirmées : 25 € par séance et par personne, adultes et enfants, payable à l'avance.
+   *  Le nombre de séances est flexible : il se fixe sur chaque cycle (idéalement 15 ou 20). */
+  var INITIAL_OFFRES = [
+    { id: 'OFF-ADULTE', nom: 'Collectif adulte – 25 €/séance', type_activite: 'collectif_adulte', public: 'adulte', duree_seance_min: '', nb_seances: '', tarif_seance: 25, prix_cycle: '',
+      taille_min: 2, taille_max: 4, date_effet: '2026-08-31', date_fin: '', statut: 'actif', source: 'Confirmé par Anthony (01/11/2026)', commentaire: 'Payable à l\'avance. Nombre de séances fixé par cycle (15 ou 20 conseillé).' },
+    { id: 'OFF-JUNIOR', nom: 'Collectif junior – 25 €/séance', type_activite: 'collectif_junior', public: 'junior', duree_seance_min: '', nb_seances: '', tarif_seance: 25, prix_cycle: '',
+      taille_min: 2, taille_max: 4, date_effet: '2026-08-31', date_fin: '', statut: 'actif', source: 'Confirmé par Anthony (01/11/2026)', commentaire: 'Payable à l\'avance. Nombre de séances fixé par cycle (15 ou 20 conseillé).' }
+  ];
+  /** Horaires confirmés : 8 h – 21 h pour les six terrains. */
+  var HORAIRES_TERRAINS = '08:00-21:00';
+
+  return { ENUMS: ENUMS, SHEETS: SHEETS, META: META, sheet: sheet, col: col, headers: headers, INITIAL_PARAMETRES: INITIAL_PARAMETRES, INITIAL_OFFRES: INITIAL_OFFRES, HORAIRES_TERRAINS: HORAIRES_TERRAINS };
 });
 
 /* ---- src/core/permissions.js ---- */
@@ -2199,7 +2211,7 @@ pre.code { background: var(--line-2); padding: 10px; border-radius: var(--radius
 
     // --- Paramètres structurants
     if (!calc.param(ctx, 'date_ouverture_indoor')) add('P01', 'bloquant', 'parametres', 'Date exacte d\'ouverture des terrains indoor non renseignée : l\'historique n\'a pas de point de départ.', 'Paramètres');
-    if (!ctx.params.some(function (p) { return p.categorie === 'heures_pointe'; })) add('P02', 'attention', 'parametres', 'Heures de pointe / creuses non définies : l\'occupation pointe/creuse est indisponible.', 'Paramètres');
+    if (!ctx.params.some(function (p) { return p.categorie === 'heures_pointe'; })) add('P02', 'info', 'parametres', 'Heures de pointe / creuses non définies : l\'occupation pointe/creuse est indisponible.', 'Paramètres');
     if (!ctx.params.some(function (p) { return p.categorie === 'vacances'; })) add('P03', 'info', 'parametres', 'Périodes de vacances scolaires (Fédération Wallonie-Bruxelles) non encodées.', 'Paramètres');
     if (!calc.param(ctx, 'montants_tva')) add('P04', 'info', 'parametres', 'Convention HTVA / TVAC non confirmée pour les montants.', 'Paramètres');
     ctx.params.filter(function (p) { return p.categorie === 'taux_coach'; }).forEach(function (p) {
@@ -2211,7 +2223,11 @@ pre.code { background: var(--line-2); padding: 10px; border-radius: var(--radius
     D.offres.forEach(function (o) {
       if (o.statut === 'archive') return;
       if (u.num(o.tarif_seance) === null && u.num(o.prix_cycle) === null) add('T01', 'bloquant', 'tarifs', 'Offre « ' + o.nom + ' » sans tarif : revenu non calculable.', 'Offres', o.id);
-      if (u.num(o.nb_seances) === null) add('T02', 'bloquant', 'tarifs', 'Offre « ' + o.nom + ' » sans nombre de séances.', 'Offres', o.id);
+      if (u.num(o.nb_seances) === null) D.cycles.forEach(function (cy) {
+        if (cy.offre_id === o.id && cy.statut !== 'annule' && u.num(cy.nb_seances) === null &&
+          D.inscriptions.some(function (i) { return i.cycle_id === cy.id && i.statut === 'inscrit' && u.num(i.nb_seances_prevues) === null; }))
+          add('T02', 'bloquant', 'tarifs', 'Cycle « ' + cy.nom + ' » sans nombre de séances (l\'offre ne le fixe pas) : revenu non calculable.', 'Cycles', cy.id);
+      });
       if (!u.parseDate(o.date_effet)) add('T03', 'attention', 'tarifs', 'Offre « ' + o.nom + ' » sans date d\'effet.', 'Offres', o.id);
       var t = u.num(o.tarif_seance), pc = u.num(o.prix_cycle), n = u.num(o.nb_seances);
       if (t !== null && pc !== null && n !== null && Math.abs(t * n - pc) > 0.01) add('T04', 'attention', 'tarifs', 'Offre « ' + o.nom + ' » : prix du cycle (' + u.fmtEUR(pc, 2) + ') ≠ prix par séance × séances (' + u.fmtEUR(t * n, 2) + ').', 'Offres', o.id);
@@ -3195,6 +3211,7 @@ pre.code { background: var(--line-2); padding: 10px; border-radius: var(--radius
   SheetsStore.prototype.archive = function (sheet, id, motif) { return call('api_archive', [this.token, sheet, id, motif || '']).then(function (r) { return r.row; }); };
   SheetsStore.prototype.importRows = function (sheet, recs, meta) { return call('api_import', [this.token, sheet, recs, meta]).then(function (r) { return r.import; }); };
   SheetsStore.prototype.undoImport = function (id) { return call('api_undoImport', [this.token, id]).then(function (r) { return r.import; }); };
+  SheetsStore.prototype.setAccessCode = function (userId, code) { return call('api_setAccessCode', [this.token, userId, code]); };
   SheetsStore.prototype.logEvent = function (action, motif) { return call('api_log', [this.token, action, motif || '']); };
 
   function create() {
@@ -5048,7 +5065,23 @@ pre.code { background: var(--line-2); padding: 10px; border-radius: var(--radius
   A['terr-add'] = function () { UI.editForm('terrains', null, { defaults: { statut: 'actif' } }); };
   var USR_FIELDS = ['email', 'nom_affiche', 'role', 'actif'];
   A['usr-add'] = function () { UI.editForm('utilisateurs', null, { fields: USR_FIELDS, defaults: { actif: true, role: 'coach' }, intro: 'L\'e-mail doit être celui du compte Google utilisé pour ouvrir l\'application.' }); };
-  A['usr-edit'] = function (el) { UI.editForm('utilisateurs', byId('utilisateurs', el.getAttribute('data-id')), { fields: USR_FIELDS, archivable: false, motif: 'Gestion des utilisateurs' }); };
+  A['usr-edit'] = function (el) {
+    var id = el.getAttribute('data-id');
+    UI.editForm('utilisateurs', byId('utilisateurs', id), { fields: USR_FIELDS, archivable: false, motif: 'Gestion des utilisateurs',
+      extraFooter: UI.btn('Définir le code d\'accès', 'usr-code', { cls: 'ghost', data: { id: id } }) });
+  };
+  A['usr-code'] = function (el) {
+    var a = app(), id = el.getAttribute('data-id');
+    if (!a.store.setAccessCode) { UI.toast('En démonstration, aucun code n\'est nécessaire.'); return; }
+    var body = '<p>Code personnel (8 caractères minimum) à communiquer de vive voix. Il n\'est jamais stocké en clair et ne pourra pas être relu : en cas d\'oubli, définissez-en un nouveau.</p>' +
+      '<label class="field"><span>Nouveau code</span><input class="input" type="text" name="code" autocomplete="off" minlength="8"></label><div class="form-errors" role="alert"></div>';
+    var m = UI.modal('Code d\'accès', body, { footer: '<span class="spacer"></span>' + UI.btn('Annuler', 'modal-close', { cls: 'ghost' }) + UI.btn('Enregistrer le code', 'usr-code-ok', { cls: 'primary' }) });
+    m.querySelector('[data-action="usr-code-ok"]').addEventListener('click', function () {
+      var code = m.querySelector('[name=code]').value;
+      if (code.length < 8) { m.querySelector('.form-errors').textContent = 'Au moins 8 caractères.'; return; }
+      a.store.setAccessCode(id, code).then(function () { UI.closeModal(); UI.toast('Code enregistré.', 'ok'); }).catch(function (x) { m.querySelector('.form-errors').textContent = x.message; });
+    });
+  };
   A['perm-toggle'] = function (el) {
     var a = app(), role = el.getAttribute('data-role'), perm = el.getAttribute('data-perm');
     var on = el.getAttribute('aria-pressed') !== 'true';

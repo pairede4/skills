@@ -2,14 +2,12 @@
 
 Durée : environ 20 minutes. Aucune compétence technique requise. **Ce branchement n'a pas pu être testé depuis l'environnement de développement** (pas d'accès à un compte Google) : suivez la vérification de l'étape 7 et signalez tout message d'erreur.
 
-## Choisir le mode d'identification (une seule question)
+## Identification des utilisateurs
 
-| Situation | Mode | Réglage |
-|---|---|---|
-| Tous les utilisateurs ont une adresse du **même domaine Google Workspace** (ex. `@davidlloyd.be` gérée par Google) | `google` (défaut) | Accès « Toute personne de *votre domaine* » |
-| Certains utilisent une adresse **Gmail personnelle** ou un autre domaine | `code` | Accès « Toute personne disposant d'un compte Google » + un code personnel par utilisateur |
+Le club n'utilise pas Google Workspace : l'application est donc réglée (par défaut) pour fonctionner avec **n'importe quel compte** :
 
-En mode `google`, Google transmet l'adresse de la personne connectée, qui doit figurer dans l'onglet **Utilisateurs**. Hors domaine, Google ne transmet pas l'adresse : le mode `code` ajoute un code personnel (stocké uniquement sous forme d'empreinte).
+- **Anthony**, propriétaire du classeur, est reconnu automatiquement par son compte Google.
+- **Les autres** (Gilles, réception, Laurent…) se connectent avec **leur e-mail + un code personnel** qu'Anthony définit dans l'application (Paramètres → Utilisateurs → ouvrir la personne → « Définir le code d'accès »). Le code n'est jamais stocké en clair ; 5 erreurs bloquent l'adresse 15 minutes ; une session dure 6 heures.
 
 ## Étape 1 – Créer le classeur
 
@@ -29,14 +27,13 @@ Les fichiers sont dans le dossier `dist/apps-script/` du projet.
 2. Cliquez sur **+** → **Script**, nommez-le `Shared` et collez **`dist/apps-script/Shared.gs`**.
 3. Cliquez sur **+** → **HTML**, nommez-le `Index` (sans extension) et collez **`dist/apps-script/Index.html`**.
 4. Paramètres du projet (roue dentée) → cochez **« Afficher le fichier manifeste appsscript.json »**, puis remplacez le contenu de `appsscript.json` par **`dist/apps-script/appsscript.json`**.
-   - En mode `code`, remplacez `"access": "DOMAIN"` par `"access": "ANYONE"`.
 5. Enregistrez (icône disquette).
 
 ## Étape 4 – Installer les onglets
 
 1. En haut, choisissez la fonction **`setupSpreadsheet`**, puis **Exécuter**.
 2. Google demande une autorisation : choisissez le compte d'Anthony → « Paramètres avancés » → « Accéder au projet » → **Autoriser**. (Écran normal pour un script personnel non publié sur le Marketplace.)
-3. Le classeur contient désormais 17 onglets, les paramètres initiaux du cadrage, six terrains à compléter et Anthony comme administrateur.
+3. Le classeur contient désormais 17 onglets et les valeurs confirmées : ouverture indoor le 31/08/2026, six terrains ouverts de 8 h à 21 h, Gilles (coach, 35 €/h depuis le 31/08/2026), offres collectives adulte et junior à 25 € par séance et par personne, montants TVAC. Anthony est administrateur.
 
 Autorisations demandées et pourquoi :
 
@@ -47,41 +44,28 @@ Autorisations demandées et pourquoi :
 | Google Drive | créer les sauvegardes datées du classeur |
 | Exécution de scripts | programmer la sauvegarde quotidienne |
 
-## Étape 5 – Compléter les données indispensables (dans l'application ou dans le classeur)
+## Étape 5 – Compléter ce qui reste (dans l'application)
 
-1. **Paramètres** → `date_ouverture_indoor` : date exacte (AAAA-MM-JJ).
-2. **Terrains** : noms, type indoor/outdoor, date de mise en service, horaires de chaque jour (`07:00-23:00`, plusieurs plages séparées par `;`, ou `fermé`).
-3. **Utilisateurs** : une ligne par personne (e-mail du compte Google, nom, rôle `admin` / `coach` / `reception` / `manager`, actif coché).
-4. **Paramètres → taux_coach** : pour chaque coach, référence = son ID utilisateur, valeur = taux horaire, date d'effet. Corrigez la ligne de Gilles (référence et date d'effet).
-5. **Offres** : formules avec leurs tarifs confirmés et nombre de séances.
+1. **Paramètres → Utilisateurs** : ouvrir « Gilles », saisir son e-mail, cocher « actif », puis « Définir le code d'accès ». Ajouter de même la réception et Laurent (rôle `manager`).
+2. **Paramètres → Terrains** : ajuster les noms si besoin (créés « Indoor 1-3 » et « Outdoor 4-6 »).
+3. **Académies → Cycles** : pour chaque groupe, choisir l'offre (adulte ou junior), le coach, le créneau et le **nombre de séances (15 ou 20)**, puis « Générer les séances ».
+4. Facultatif : périodes de vacances scolaires (Paramètres → Vacances) pour que la génération des séances les saute.
 
 ## Étape 6 – Publier l'application
 
 1. **Déployer → Nouveau déploiement** → type **Application Web**.
-2. Description : `v1`. Exécuter en tant que : **Moi**. Qui a accès : **votre domaine** (mode `google`) ou **Toute personne disposant d'un compte Google** (mode `code`).
+2. Description : `v1`. Exécuter en tant que : **Moi**. Qui a accès : **Toute personne disposant d'un compte Google** (une adresse Gmail suffit ; la sécurité est assurée par la liste Utilisateurs et les codes personnels : une personne non inscrite ne voit que l'écran de connexion).
 3. **Déployer**, puis copiez l'**URL de l'application Web** (se termine par `/exec`). C'est le lien à envoyer aux utilisateurs.
 
 Les utilisateurs n'ont **pas** besoin d'accès au classeur : ne le partagez qu'avec les personnes qui doivent le consulter directement (Laurent en lecture seule, par exemple).
-
-### Mode `code` uniquement
-
-1. Paramètres du projet → Propriétés du script → ajoutez `AUTH_MODE` = `code`.
-2. Pour chaque utilisateur, dans l'éditeur : remplacez temporairement la fonction exécutée par un appel, ou ouvrez un nouveau fichier `Codes.gs` contenant :
-   ```js
-   function definirCodes() {
-     setAccessCode('coach@exemple.be', 'choisir-un-code-long');
-   }
-   ```
-   Exécutez `definirCodes`, communiquez le code de vive voix, puis **supprimez le fichier `Codes.gs`** (le code n'y est conservé que le temps de l'exécution ; seule son empreinte est stockée).
-3. Les sessions durent 6 heures ; 5 essais erronés bloquent l'adresse 15 minutes.
 
 ## Étape 7 – Vérifier
 
 1. Ouvrez l'URL `/exec` : le bandeau « Mode démonstration » ne doit **pas** apparaître ; le badge « Google Sheets » est visible sur ordinateur.
 2. Encodez une séance de test, vérifiez qu'une ligne apparaît dans l'onglet **Séances** et une entrée dans **Journal_Audit** ; puis archivez-la.
 3. Ouvrez l'URL avec un compte coach : seuls Séances, Heures, Événements, Satisfaction (encodage), Membres et Aide sont visibles.
-4. En cas d'erreur « Accès non autorisé » : l'e-mail n'est pas (ou mal) saisi dans Utilisateurs, ou la case « actif » n'est pas cochée.
-5. En cas d'erreur « Votre compte Google n'est pas transmis » : passez en mode `code`.
+4. Ouvrez l'URL dans une fenêtre de navigation privée : l'écran de connexion (e-mail + code) doit apparaître ; connectez-vous avec le code défini pour Gilles.
+5. En cas d'erreur « Accès non autorisé » : l'e-mail n'est pas (ou mal) saisi dans Utilisateurs, ou la case « actif » n'est pas cochée.
 
 ## Mettre à jour l'application
 

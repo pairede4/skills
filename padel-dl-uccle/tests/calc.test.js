@@ -201,3 +201,17 @@ test('P&L : une activité dont tous les revenus sont inconnus est indisponible, 
   assert.equal(junior.revenue.v, null);
   assert.equal(junior.margin.v, null);
 });
+
+test('cycle flexible : le nombre de séances du cycle complète une offre qui ne le fixe pas', () => {
+  const db = build();
+  db.offres[0].nb_seances = '';
+  db.cycles[0].nb_seances = 15;
+  const c = calc.context(db, TODAY);
+  const st = calc.inscriptionState(c, c.inscriptionsById.I1, '2026-09-30');
+  assert.equal(st.prevues, 15);
+  assert.equal(st.attendu, 375);
+  close(st.reconnu, 100, '4 séances × 25 €');
+  db.cycles[0].nb_seances = '';
+  const st2 = calc.inscriptionState(calc.context(db, TODAY), c.inscriptionsById.I1, '2026-09-30');
+  assert.equal(st2.reconnu, null, 'sans nombre de séances, le revenu est bloqué');
+});

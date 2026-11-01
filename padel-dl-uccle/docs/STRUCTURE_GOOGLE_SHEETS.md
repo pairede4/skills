@@ -183,7 +183,7 @@ Clé de détection des doublons : `offre_id + date_debut + jour_semaine + heure_
 | `terrain_id` | Terrain | Référence (ID) | Non |  | → Terrains.id |
 | `niveau` | Niveau | Nombre entier | Non | entre 1 et 8 |  |
 | `capacite` | Capacité | Nombre entier | Non |  |  |
-| `nb_seances` | Séances prévues (si différent de l'offre) | Nombre entier | Non |  |  |
+| `nb_seances` | Nombre de séances du cycle | Nombre entier | Non | Cycles flexibles : idéalement 15 ou 20. Obligatoire si l'offre ne le fixe pas. |  |
 | `statut` | Statut | Liste de valeurs | Oui | valeurs : `planifie`, `en_cours`, `termine`, `annule` |  |
 | `commentaire` | Commentaire | Texte long | Non |  |  |
 | `archive` | Archivé | Booléen (TRUE/FALSE) | Non | TRUE = ligne archivée (jamais supprimée). |  |
@@ -519,7 +519,7 @@ Chargées par `setupSpreadsheet()` depuis le cadrage du 01/11/2026. Les valeurs 
 | Catégorie | Clé | Référence | Valeur | Source / remarque |
 |---|---|---|---|---|
 | general | `nom_club` |  | David Lloyd Brussels Uccle | Cadrage 01/11/2026 |
-| general | `date_ouverture_indoor` |  | *(vide)* | À FOURNIR – Date exacte d'ouverture des 3 terrains indoor (août 2026). Début de l'historique. |
+| general | `date_ouverture_indoor` |  | 2026-08-31 | Confirmé par Anthony (01/11/2026) – Ouverture des 3 terrains indoor. Début de l'historique. |
 | general | `date_debut_historique` |  | *(vide)* | Cadrage 01/11/2026 – Vide = date d'ouverture indoor. |
 | general | `duree_creneau_libre_min` |  | 90 | Cadrage 01/11/2026 – Réservation libre : 1 h 30, jusqu'à 4 joueurs. |
 | general | `delai_conversion_taster_jours` |  | 14 | Cadrage 01/11/2026 – Conversion Taster : autre activité dans les N jours. |
@@ -527,9 +527,10 @@ Chargées par `setupSpreadsheet()` depuis le cadrage du 01/11/2026. Les valeurs 
 | general | `inclure_cours_prives` |  | non | Cadrage 01/11/2026 – Cours privés d'Anthony exclus du P&L (paiement direct). |
 | general | `inclure_cout_terrains` |  | non | Cadrage 01/11/2026 – Coût théorique des terrains exclu sauf activation explicite. |
 | general | `cout_horaire_terrain` |  | *(vide)* | Non fourni – Utilisé seulement si inclure_cout_terrains = oui. |
-| general | `montants_tva` |  | *(vide)* | À CONFIRMER – HTVA ou TVAC : à confirmer avant tout usage comptable. |
+| general | `montants_tva` |  | TVAC | Confirmé par Anthony (01/11/2026) – Tous les montants sont saisis TVAC ; aucun retraitement de TVA. |
+| general | `nb_seances_cycle_conseille` |  | 15 ou 20 | Confirmé par Anthony (01/11/2026) – Cycles flexibles : le nombre de séances se fixe par cycle (idéalement 15 ou 20). |
 | general | `seuil_echantillon_nps` |  | 30 | Proposition – En dessous, le NPS est signalé comme peu fiable. |
-| taux_coach | `taux_horaire` | (ID de Gilles) | 35 | Cadrage : 35 €/h à confirmer comme valeur initiale – Remplacer la référence par l'ID utilisateur de Gilles et renseigner la date d'effet. |
+| taux_coach | `taux_horaire` | USR-GILLES | 35 | Confirmé par Anthony (01/11/2026) : seul coach, 35 €/h – Taux de Gilles depuis l'ouverture. Un nouveau taux s'ajoute avec sa date d'effet. |
 | niveau | `1` |  | Rookie | Cadrage 01/11/2026 |
 | niveau | `2` |  | Control | Cadrage 01/11/2026 |
 | niveau | `3` |  | Strategy | Cadrage 01/11/2026 |

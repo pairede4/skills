@@ -29,7 +29,7 @@
     function chance(p) { return R() < p; }
     function int(a, b) { return a + Math.floor(R() * (b - a + 1)); }
     var END = endDate || '2026-10-31';
-    var OPEN = '2026-08-17';
+    var OPEN = '2026-08-31';
     var stamp = OPEN + 'T08:00:00.000Z';
     var db = {}; schema.SHEETS.forEach(function (s) { db[s.key] = []; });
     var seq = {};
@@ -40,7 +40,6 @@
     // ---------------------------------------------------------- Paramètres
     schema.INITIAL_PARAMETRES.forEach(function (p) {
       var r = Object.assign({}, p, { id: id('PAR') });
-      if (r.cle === 'date_ouverture_indoor') { r.valeur = OPEN; r.source = FICTIF; }
       if (r.categorie === 'taux_coach') return;
       add('parametres', r);
     });
@@ -69,9 +68,9 @@
     for (var n = 1; n <= 6; n++) {
       var indoor = n <= 3;
       T.push(add('terrains', { id: 'TER-' + n, numero: n, nom: (indoor ? 'Indoor ' : 'Outdoor ') + n, lieu: indoor ? 'indoor' : 'outdoor',
-        date_mise_en_service: indoor ? OPEN : '', horaires_lun: indoor ? '07:00-23:00' : '08:00-22:00', horaires_mar: indoor ? '07:00-23:00' : '08:00-22:00',
-        horaires_mer: indoor ? '07:00-23:00' : '08:00-22:00', horaires_jeu: indoor ? '07:00-23:00' : '08:00-22:00', horaires_ven: indoor ? '07:00-23:00' : '08:00-22:00',
-        horaires_sam: indoor ? '08:00-21:00' : '09:00-20:00', horaires_dim: indoor ? '08:00-21:00' : '09:00-20:00', statut: 'actif', commentaire: 'Horaires fictifs (démo)' }));
+        date_mise_en_service: indoor ? OPEN : '', horaires_lun: schema.HORAIRES_TERRAINS, horaires_mar: schema.HORAIRES_TERRAINS,
+        horaires_mer: schema.HORAIRES_TERRAINS, horaires_jeu: schema.HORAIRES_TERRAINS, horaires_ven: schema.HORAIRES_TERRAINS,
+        horaires_sam: schema.HORAIRES_TERRAINS, horaires_dim: schema.HORAIRES_TERRAINS, statut: 'actif', commentaire: 'Horaires 8 h – 21 h (confirmés)' }));
     }
 
     // ---------------------------------------------------------- Membres
@@ -81,20 +80,20 @@
 
     // ---------------------------------------------------------- Offres
     var O = {
-      ad1: add('offres', { id: 'OFF-AD1H', nom: 'Collectif adulte 1 h (démo)', type_activite: 'collectif_adulte', public: 'adulte', duree_seance_min: 60, nb_seances: 8, tarif_seance: 25, prix_cycle: '', taille_min: 2, taille_max: 4, date_effet: OPEN, date_fin: '', statut: 'actif', source: 'Tarif 25 €/pers./h (cadrage) ; 8 séances FICTIF', commentaire: '' }),
-      ad90: add('offres', { id: 'OFF-AD90', nom: 'Collectif adulte 1 h 30 (démo)', type_activite: 'collectif_adulte', public: 'adulte', duree_seance_min: 90, nb_seances: 8, tarif_seance: 35, prix_cycle: '', taille_min: 2, taille_max: 4, date_effet: OPEN, date_fin: '', statut: 'actif', source: 'Tarif 35 €/pers./1 h 30 (cadrage) ; 8 séances FICTIF', commentaire: '' }),
-      jr1: add('offres', { id: 'OFF-JR1H', nom: 'Collectif junior 1 h (démo)', type_activite: 'collectif_junior', public: 'junior', duree_seance_min: 60, nb_seances: 8, tarif_seance: 22, prix_cycle: '', taille_min: 2, taille_max: 4, date_effet: OPEN, date_fin: '', statut: 'actif', source: FICTIF, commentaire: '' }),
-      jr90: add('offres', { id: 'OFF-JR90', nom: 'Collectif junior 1 h 30 (tarif à confirmer)', type_activite: 'collectif_junior', public: 'junior', duree_seance_min: 90, nb_seances: 8, tarif_seance: '', prix_cycle: '', taille_min: 2, taille_max: 4, date_effet: OPEN, date_fin: '', statut: 'actif', source: 'Tarif manquant (anomalie volontaire de démonstration)', commentaire: '' })
+      ad1: add('offres', { id: 'OFF-AD1H', nom: 'Collectif adulte 1 h (démo)', type_activite: 'collectif_adulte', public: 'adulte', duree_seance_min: 60, nb_seances: '', tarif_seance: 25, prix_cycle: '', taille_min: 2, taille_max: 4, date_effet: OPEN, date_fin: '', statut: 'actif', source: '25 €/séance/pers. (confirmé) ; séances fixées par cycle', commentaire: '' }),
+      ad90: add('offres', { id: 'OFF-AD90', nom: 'Collectif adulte 1 h 30 (démo)', type_activite: 'collectif_adulte', public: 'adulte', duree_seance_min: 90, nb_seances: '', tarif_seance: 25, prix_cycle: '', taille_min: 2, taille_max: 4, date_effet: OPEN, date_fin: '', statut: 'actif', source: '25 €/séance/pers. (confirmé) ; durée FICTIVE', commentaire: '' }),
+      jr1: add('offres', { id: 'OFF-JR1H', nom: 'Collectif junior 1 h (démo)', type_activite: 'collectif_junior', public: 'junior', duree_seance_min: 60, nb_seances: '', tarif_seance: 25, prix_cycle: '', taille_min: 2, taille_max: 4, date_effet: OPEN, date_fin: '', statut: 'actif', source: '25 €/séance/pers. (confirmé)', commentaire: '' }),
+      jr90: add('offres', { id: 'OFF-JR90', nom: 'Formule test sans tarif (anomalie de démo)', type_activite: 'collectif_junior', public: 'junior', duree_seance_min: 90, nb_seances: '', tarif_seance: '', prix_cycle: '', taille_min: 2, taille_max: 4, date_effet: OPEN, date_fin: '', statut: 'actif', source: 'Tarif manquant (anomalie volontaire de démonstration)', commentaire: '' })
     };
 
     // ---------------------------------------------------------- Cycles
     function holiday(d) { return d >= '2026-10-19' && d <= '2026-10-30'; }
     var cycles = [
-      { id: 'CYC-0001', nom: 'Adultes niv. 2 – mardi 19 h', offre: O.ad1, coach: U.a, dow: 2, start: '2026-09-08', h: ['19:00', '20:00'], ter: 'TER-1', niveau: 2, members: adults.slice(0, 4) },
-      { id: 'CYC-0002', nom: 'Adultes niv. 3-4 – jeudi 20 h', offre: O.ad90, coach: U.a, dow: 4, start: '2026-09-10', h: ['20:00', '21:30'], ter: 'TER-2', niveau: 3, members: adults.slice(4, 7) },
-      { id: 'CYC-0003', nom: 'Juniors – mercredi 17 h', offre: O.jr1, coach: U.b, dow: 3, start: '2026-09-09', h: ['17:00', '18:00'], ter: 'TER-3', niveau: 1, members: juniors.slice(0, 4) },
-      { id: 'CYC-0004', nom: 'Juniors – samedi 12 h 30', offre: O.jr90, coach: U.b, dow: 6, start: '2026-09-12', h: ['12:30', '14:00'], ter: 'TER-1', niveau: 2, members: juniors.slice(4, 7) },
-      { id: 'CYC-0005', nom: 'Adultes niv. 1 – lundi 20 h', offre: O.ad1, coach: U.c, dow: 1, start: '2026-09-14', h: ['20:00', '21:00'], ter: 'TER-3', niveau: 1, members: adults.slice(7, 10) }
+      { id: 'CYC-0001', nom: 'Adultes niv. 2 – mardi 19 h', offre: O.ad1, coach: U.a, dow: 2, start: '2026-09-08', nb: 15, h: ['19:00', '20:00'], ter: 'TER-1', niveau: 2, members: adults.slice(0, 4) },
+      { id: 'CYC-0002', nom: 'Adultes niv. 3-4 – jeudi 20 h', offre: O.ad90, coach: U.a, dow: 4, start: '2026-09-10', nb: 20, h: ['19:30', '21:00'], ter: 'TER-2', niveau: 3, members: adults.slice(4, 7) },
+      { id: 'CYC-0003', nom: 'Juniors – mercredi 17 h', offre: O.jr1, coach: U.b, dow: 3, start: '2026-09-09', nb: 15, h: ['17:00', '18:00'], ter: 'TER-3', niveau: 1, members: juniors.slice(0, 4) },
+      { id: 'CYC-0004', nom: 'Juniors – samedi 12 h 30', offre: O.jr90, coach: U.b, dow: 6, start: '2026-09-12', nb: 15, h: ['12:30', '14:00'], ter: 'TER-1', niveau: 2, members: juniors.slice(4, 7) },
+      { id: 'CYC-0005', nom: 'Adultes niv. 1 – lundi 20 h', offre: O.ad1, coach: U.c, dow: 1, start: '2026-09-14', nb: 20, h: ['19:30', '20:30'], ter: 'TER-3', niveau: 1, members: adults.slice(7, 10) }
     ];
     var seances = [];
     function seance(r) { r.id = r.id || id('SEA'); ['cycle_id', 'evenement_id', 'coach_remplacant_id', 'niveau', 'capacite', 'nb_inscrits', 'nb_presents', 'nb_absents', 'nb_no_shows', 'nb_annulations', 'payant', 'commentaire', 'incident'].forEach(function (k) { if (r[k] === undefined) r[k] = ''; }); seances.push(add('seances', r)); return r; }
@@ -110,19 +109,19 @@
     function hourStatus(d) { if (d <= '2026-09-30') return 'paye'; if (d <= '2026-10-18') return 'valide'; if (d <= '2026-10-29') return chance(0.85) ? 'soumis' : 'brouillon'; return 'brouillon'; }
 
     cycles.forEach(function (c) {
-      var cyc = add('cycles', { id: c.id, nom: c.nom, offre_id: c.offre.id, coach_id: c.coach.id, date_debut: c.start, date_fin: '', jour_semaine: c.dow, heure_debut: c.h[0], heure_fin: c.h[1], terrain_id: c.ter, niveau: c.niveau, capacite: 4, nb_seances: '', statut: 'en_cours', commentaire: '' });
+      var cyc = add('cycles', { id: c.id, nom: c.nom, offre_id: c.offre.id, coach_id: c.coach.id, date_debut: c.start, date_fin: '', jour_semaine: c.dow, heure_debut: c.h[0], heure_fin: c.h[1], terrain_id: c.ter, niveau: c.niveau, capacite: 4, nb_seances: c.nb, statut: 'en_cours', commentaire: '' });
       var ins = c.members.map(function (m, i) {
         var late = (c.id === 'CYC-0001' && i === 3);
-        var r = add('inscriptions', { id: id('INS'), membre_id: m, cycle_id: cyc.id, seance_id: '', evenement_id: '', date_inscription: u.addDays(c.start, late ? 14 : -5), date_premiere_seance: late ? u.addDays(c.start, 14) : '', nb_seances_prevues: late ? 6 : '', montant_attendu: '', statut: 'inscrit', commentaire: late ? 'Entrée en cours de cycle (fictif)' : '' }, 'reception@exemple.invalid');
+        var r = add('inscriptions', { id: id('INS'), membre_id: m, cycle_id: cyc.id, seance_id: '', evenement_id: '', date_inscription: u.addDays(c.start, late ? 14 : -5), date_premiere_seance: late ? u.addDays(c.start, 14) : '', nb_seances_prevues: late ? c.nb - 2 : '', montant_attendu: '', statut: 'inscrit', commentaire: late ? 'Entrée en cours de cycle (fictif)' : '' }, 'reception@exemple.invalid');
         var price = u.num(c.offre.tarif_seance);
         if (price !== null) {
-          var nb = late ? 6 : 8, unpaid = (c.id === 'CYC-0005' && i === 2);
+          var nb = late ? c.nb - 2 : c.nb, unpaid = (c.id === 'CYC-0005' && i === 2);
           if (!unpaid) add('paiements', { id: id('PAY'), date_paiement: u.addDays(r.date_inscription, 1), membre_id: m, inscription_id: r.id, evenement_id: '', seance_id: '', categorie_revenu: '', montant: price * nb, mode: pick(['carte', 'bancontact', 'compte_membre']), reference: 'REC-' + r.id.slice(4), statut: (c.id === 'CYC-0002' && i === 0) ? 'a_verifier' : 'encaisse', verifie_par: 'reception@exemple.invalid', verifie_le: '', commentaire: '' }, 'reception@exemple.invalid');
         }
         return r;
       });
       var count = 0;
-      for (var d = c.start; count < 8; d = u.addDays(d, 7)) {
+      for (var d = c.start; count < c.nb; d = u.addDays(d, 7)) {
         if (holiday(d)) continue;
         count++;
         var past = d <= END;
@@ -215,7 +214,7 @@
     ].forEach(function (x) { add('depenses', { id: id('DEP'), date: x[0], categorie: x[1], montant: x[2], fournisseur: x[3], type_activite: x[5], evenement_id: x[4], cycle_id: '', seance_id: '', justificatif: x[6], statut: 'payee', commentaire: '' }); });
 
     // ---------------------------------------------------------- Réservations libres (simulation)
-    var slots = { indoor: ['07:30', '09:00', '10:30', '12:00', '13:30', '17:00', '18:30', '20:00', '21:30'], outdoor: ['09:00', '10:30', '12:00', '13:30', '17:00', '18:30', '20:00'] };
+    var slots = { indoor: ['08:00', '09:30', '11:00', '12:30', '14:00', '17:00', '18:30'], outdoor: ['09:00', '10:30', '12:00', '13:30', '17:00', '18:30', '20:00'] };
     u.eachDay(OPEN, END).forEach(function (d) {
       var wd = u.weekday(d);
       T.forEach(function (t) {
@@ -227,7 +226,7 @@
           var p = t.lieu === 'indoor' ? (peak ? 0.8 : 0.32) : (peak ? (autumn ? 0.35 : 0.6) : (autumn ? 0.08 : 0.2));
           if (!chance(p)) return;
           var end = u.toMinutes(h) + 90;
-          var close = (wd >= 6) ? (t.lieu === 'indoor' ? 21 * 60 : 20 * 60) : (t.lieu === 'indoor' ? 23 * 60 : 22 * 60);
+          var close = 21 * 60;
           if (end > close) return;
           var r = R();
           add('occupation', { id: id('OCC'), terrain_id: t.id, date: d, heure_debut: h, heure_fin: u.fromMinutes(end), type: 'reservation_libre',

@@ -79,7 +79,13 @@ test('serveur : installation, droits, verrouillage des heures, archivage, import
   assert.equal(boot.error, undefined, boot.error);
   assert.equal(boot.user.role, 'admin');
   assert.equal(boot.db.terrains.length, 6);
-  assert.equal(boot.db.parametres.find((p) => p.cle === 'date_ouverture_indoor').valeur, '', 'date d\'ouverture non inventée');
+  assert.equal(boot.db.parametres.find((p) => p.cle === 'date_ouverture_indoor').valeur, '2026-08-31');
+  assert.ok(boot.db.terrains.every((t) => t.horaires_lun === '08:00-21:00' && t.horaires_dim === '08:00-21:00'));
+  assert.equal(boot.db.terrains.filter((t) => t.date_mise_en_service === '2026-08-31').length, 3);
+  assert.equal(JSON.stringify(boot.db.offres.map((o) => o.tarif_seance)), '[25,25]');
+  const gilles = boot.db.utilisateurs.find((u) => u.id === 'USR-GILLES');
+  assert.equal(gilles.role, 'coach'); assert.equal(gilles.actif, false, 'inactif tant que son e-mail n\'est pas saisi');
+  assert.equal(boot.db.parametres.find((p) => p.categorie === 'taux_coach').reference, 'USR-GILLES');
 
   // L'admin crée un coach et son taux.
   let r = G.api_save(null, 'utilisateurs', [{ email: 'coach@exemple.invalid', nom_affiche: 'Coach test', role: 'coach', actif: true }], '');
@@ -151,8 +157,12 @@ test('serveur : mode « code » (comptes hors domaine)', () => {
   const G = env.ctx;
   G.setupSpreadsheet();
   G.api_save(null, 'utilisateurs', [{ email: 'recep@exemple.invalid', nom_affiche: 'Réception', role: 'reception', actif: true }], '');
-  assert.match(G.setAccessCode('recep@exemple.invalid', 'code-tres-secret'), /Code défini/);
-  env.props.AUTH_MODE = 'code';
+  // Le propriétaire (Anthony) est reconnu par son compte Google, sans code.
+  assert.equal(G.api_bootstrap(null).user.role, 'admin');
+  // L'administrateur définit un code depuis l'application.
+  const recepId = G.api_bootstrap(null).db.utilisateurs.find((u) => u.role === 'reception').id;
+  assert.equal(G.api_setAccessCode(null, recepId, 'court').error, 'Le code doit contenir au moins 8 caractères.');
+  assert.ok(G.api_setAccessCode(null, recepId, 'code-tres-secret').ok);
   env.setActive('');
   assert.equal(G.api_bootstrap(null).needLogin, true);
   assert.match(G.api_login('recep@exemple.invalid', 'mauvais').error, /incorrect/);

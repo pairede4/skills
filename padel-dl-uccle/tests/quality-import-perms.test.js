@@ -105,9 +105,14 @@ test('schéma : chaque feuille a un ID, des colonnes uniques et des références
 });
 
 test('paramètres initiaux : aucun tarif ni date inventés', () => {
+  // Valeurs confirmées par Anthony le 01/11/2026 ; rien d'autre n'est rempli.
   const ouverture = schema.INITIAL_PARAMETRES.find((p) => p.cle === 'date_ouverture_indoor');
-  assert.equal(ouverture.valeur, '');
-  const gilles = schema.INITIAL_PARAMETRES.find((p) => p.categorie === 'taux_coach');
-  assert.equal(gilles.valeur, '35');
-  assert.equal(gilles.date_effet, '');
+  assert.equal(ouverture.valeur, '2026-08-31');
+  const gilles = schema.INITIAL_PARAMETRES.filter((p) => p.categorie === 'taux_coach');
+  assert.equal(gilles.length, 1);
+  assert.deepEqual([gilles[0].reference, gilles[0].valeur, gilles[0].date_effet], ['USR-GILLES', '35', '2026-08-31']);
+  assert.ok(schema.INITIAL_OFFRES.every((o) => o.tarif_seance === 25 && o.nb_seances === ''), '25 €/séance, séances fixées par cycle');
+  assert.equal(schema.INITIAL_PARAMETRES.find((p) => p.cle === 'montants_tva').valeur, 'TVAC');
+  assert.ok(!schema.INITIAL_PARAMETRES.some((p) => p.categorie === 'heures_pointe'), 'heures de pointe non inventées');
+  assert.equal(schema.INITIAL_PARAMETRES.find((p) => p.cle === 'cout_horaire_terrain').valeur, '');
 });

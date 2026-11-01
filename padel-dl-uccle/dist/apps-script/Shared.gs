@@ -464,7 +464,7 @@
         c('terrain_id', 'ref', false, 'Terrain', { ref: 'terrains' }),
         c('niveau', 'int', false, 'Niveau', { min: 1, max: 8 }),
         c('capacite', 'int', false, 'Capacité'),
-        c('nb_seances', 'int', false, 'Séances prévues (si différent de l\'offre)'),
+        c('nb_seances', 'int', false, 'Nombre de séances du cycle', { help: 'Cycles flexibles : idéalement 15 ou 20. Obligatoire si l\'offre ne le fixe pas.' }),
         c('statut', 'enum', true, 'Statut', { enumName: 'statut_cycle' }),
         c('commentaire', 'longtext', false, 'Commentaire')
       ]
@@ -737,7 +737,7 @@
       rows.push(r);
     }
     p('general', 'nom_club', 'David Lloyd Brussels Uccle');
-    p('general', 'date_ouverture_indoor', '', { source: 'À FOURNIR', description: 'Date exacte d\'ouverture des 3 terrains indoor (août 2026). Début de l\'historique.' });
+    p('general', 'date_ouverture_indoor', '2026-08-31', { source: 'Confirmé par Anthony (01/11/2026)', description: 'Ouverture des 3 terrains indoor. Début de l\'historique.' });
     p('general', 'date_debut_historique', '', { description: 'Vide = date d\'ouverture indoor.' });
     p('general', 'duree_creneau_libre_min', '90', { description: 'Réservation libre : 1 h 30, jusqu\'à 4 joueurs.' });
     p('general', 'delai_conversion_taster_jours', '14', { description: 'Conversion Taster : autre activité dans les N jours.' });
@@ -745,9 +745,10 @@
     p('general', 'inclure_cours_prives', 'non', { description: 'Cours privés d\'Anthony exclus du P&L (paiement direct).' });
     p('general', 'inclure_cout_terrains', 'non', { description: 'Coût théorique des terrains exclu sauf activation explicite.' });
     p('general', 'cout_horaire_terrain', '', { source: 'Non fourni', description: 'Utilisé seulement si inclure_cout_terrains = oui.' });
-    p('general', 'montants_tva', '', { source: 'À CONFIRMER', description: 'HTVA ou TVAC : à confirmer avant tout usage comptable.' });
+    p('general', 'montants_tva', 'TVAC', { source: 'Confirmé par Anthony (01/11/2026)', description: 'Tous les montants sont saisis TVAC ; aucun retraitement de TVA.' });
+    p('general', 'nb_seances_cycle_conseille', '15 ou 20', { source: 'Confirmé par Anthony (01/11/2026)', description: 'Cycles flexibles : le nombre de séances se fixe par cycle (idéalement 15 ou 20).' });
     p('general', 'seuil_echantillon_nps', '30', { source: 'Proposition', description: 'En dessous, le NPS est signalé comme peu fiable.' });
-    p('taux_coach', 'taux_horaire', '35', { reference: '(ID de Gilles)', libelle: 'Gilles', source: 'Cadrage : 35 €/h à confirmer comme valeur initiale', description: 'Remplacer la référence par l\'ID utilisateur de Gilles et renseigner la date d\'effet.' });
+    p('taux_coach', 'taux_horaire', '35', { reference: 'USR-GILLES', libelle: 'Gilles', date_effet: '2026-08-31', source: 'Confirmé par Anthony (01/11/2026) : seul coach, 35 €/h', description: 'Taux de Gilles depuis l\'ouverture. Un nouveau taux s\'ajoute avec sa date d\'effet.' });
     var niveaux = [['1', 'Rookie', '-'], ['2', 'Control', '0,5-1,2'], ['3', 'Strategy', '1,2-2,0'], ['4', 'Performance', '2,0-2,8'], ['5', 'Challenge', '2,8-3,6'], ['6', 'Competition P300', '3,6-4,4'], ['7', 'Competition P400/P500', '4,4-5,2'], ['8', 'Elite', '5,2+']];
     niveaux.forEach(function (n) { p('niveau', n[0], n[1], { libelle: n[1], attributs: 'playtomic=' + n[2] }); });
     var types = [
@@ -775,7 +776,18 @@
     return rows;
   })();
 
-  return { ENUMS: ENUMS, SHEETS: SHEETS, META: META, sheet: sheet, col: col, headers: headers, INITIAL_PARAMETRES: INITIAL_PARAMETRES };
+  /** Offres initiales confirmées : 25 € par séance et par personne, adultes et enfants, payable à l'avance.
+   *  Le nombre de séances est flexible : il se fixe sur chaque cycle (idéalement 15 ou 20). */
+  var INITIAL_OFFRES = [
+    { id: 'OFF-ADULTE', nom: 'Collectif adulte – 25 €/séance', type_activite: 'collectif_adulte', public: 'adulte', duree_seance_min: '', nb_seances: '', tarif_seance: 25, prix_cycle: '',
+      taille_min: 2, taille_max: 4, date_effet: '2026-08-31', date_fin: '', statut: 'actif', source: 'Confirmé par Anthony (01/11/2026)', commentaire: 'Payable à l\'avance. Nombre de séances fixé par cycle (15 ou 20 conseillé).' },
+    { id: 'OFF-JUNIOR', nom: 'Collectif junior – 25 €/séance', type_activite: 'collectif_junior', public: 'junior', duree_seance_min: '', nb_seances: '', tarif_seance: 25, prix_cycle: '',
+      taille_min: 2, taille_max: 4, date_effet: '2026-08-31', date_fin: '', statut: 'actif', source: 'Confirmé par Anthony (01/11/2026)', commentaire: 'Payable à l\'avance. Nombre de séances fixé par cycle (15 ou 20 conseillé).' }
+  ];
+  /** Horaires confirmés : 8 h – 21 h pour les six terrains. */
+  var HORAIRES_TERRAINS = '08:00-21:00';
+
+  return { ENUMS: ENUMS, SHEETS: SHEETS, META: META, sheet: sheet, col: col, headers: headers, INITIAL_PARAMETRES: INITIAL_PARAMETRES, INITIAL_OFFRES: INITIAL_OFFRES, HORAIRES_TERRAINS: HORAIRES_TERRAINS };
 });
 
 /* ---- src/core/permissions.js ---- */

@@ -190,6 +190,7 @@
   SheetsStore.prototype.archive = function (sheet, id, motif) { return call('api_archive', [this.token, sheet, id, motif || '']).then(function (r) { return r.row; }); };
   SheetsStore.prototype.importRows = function (sheet, recs, meta) { return call('api_import', [this.token, sheet, recs, meta]).then(function (r) { return r.import; }); };
   SheetsStore.prototype.undoImport = function (id) { return call('api_undoImport', [this.token, id]).then(function (r) { return r.import; }); };
+  SheetsStore.prototype.setAccessCode = function (userId, code) { return call('api_setAccessCode', [this.token, userId, code]); };
   SheetsStore.prototype.logEvent = function (action, motif) { return call('api_log', [this.token, action, motif || '']); };
 
   function create() {

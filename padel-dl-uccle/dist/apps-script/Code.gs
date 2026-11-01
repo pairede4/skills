@@ -4,7 +4,7 @@
  * Ce script est lié au classeur Google Sheets (Extensions → Apps Script) : aucun
  * identifiant, aucune clé et aucun ID de classeur n'est écrit dans le code.
  * Les seuls réglages (facultatifs) sont des « Propriétés du script » :
- *   AUTH_MODE       google (défaut) | code
+ *   AUTH_MODE       code (défaut : compte Google si transmis, sinon e-mail + code) | google (compte Google uniquement)
  *   SPREADSHEET_ID  uniquement si le script n'est PAS lié au classeur
  *   BACKUP_FOLDER   nom du dossier Drive des sauvegardes (défaut « Sauvegardes Padel DL Uccle »)
  *   BACKUP_KEEP     nombre de sauvegardes conservées (défaut 30)
@@ -96,14 +96,13 @@ function cache_() { return CacheService.getScriptCache(); }
 
 /** Identifie l'utilisateur. Renvoie { user, perms, db? } ou lève une erreur lisible. */
 function identify_(token, users) {
-  var mode = prop_('AUTH_MODE', 'google');
-  var email = '';
-  if (mode === 'code') {
-    email = token ? cache_().get('sess_' + token) : '';
-    if (!email) { var e1 = new Error('Session expirée ou absente.'); e1.needLogin = true; throw e1; }
-  } else {
-    email = Session.getActiveUser().getEmail();
-    if (!email) throw new Error('Votre compte Google n\'est pas transmis à l\'application. Demandez à Anthony d\'activer le mode « code » (voir le guide de connexion).');
+  var mode = prop_('AUTH_MODE', 'code');
+  // 1) Compte Google transmis (propriétaire, ou même domaine) ; 2) sinon session ouverte avec e-mail + code.
+  var email = Session.getActiveUser().getEmail() || '';
+  if (!email && mode === 'code') email = token ? (cache_().get('sess_' + token) || '') : '';
+  if (!email) {
+    if (mode === 'code') { var e1 = new Error(token ? 'Session expirée : reconnectez-vous.' : ''); e1.needLogin = true; throw e1; }
+    throw new Error('Votre compte Google n\'est pas transmis à l\'application : Anthony doit laisser AUTH_MODE sur « code ».');
   }
   email = String(email).trim().toLowerCase();
   users = users || readSheet_('utilisateurs').rows;
@@ -310,7 +309,7 @@ function salt_() {
 
 function api_login(email, code) {
   return wrap_(function () {
-    if (prop_('AUTH_MODE', 'google') !== 'code') throw new Error('Connexion par code désactivée : utilisez votre compte Google.');
+    if (prop_('AUTH_MODE', 'code') !== 'code') throw new Error('Connexion par code désactivée : utilisez votre compte Google.');
     email = String(email || '').trim().toLowerCase();
     var key = 'tries_' + email, tries = +(cache_().get(key) || 0);
     if (tries >= 5) throw new Error('Trop de tentatives. Réessayez dans 15 minutes.');
@@ -326,6 +325,24 @@ function api_login(email, code) {
     var token = Utilities.getUuid();
     cache_().put('sess_' + token, email, 21600);
     return { token: token };
+  });
+}
+
+/** Depuis l'application : l'administrateur définit le code personnel d'un utilisateur. */
+function api_setAccessCode(token, userId, code) {
+  return wrap_(function () {
+    return withLock_(function () {
+      var c = context_();
+      var admin = identify_(token, c.users);
+      if (!globalThis.Padel.permissions.permissionsFor(admin.role, c.params)['utilisateurs.edit']) throw new Error('Réservé à l\'administrateur.');
+      if (!code || String(code).length < 8) throw new Error('Le code doit contenir au moins 8 caractères.');
+      var data = readSheet_('utilisateurs');
+      var row = data.rows.filter(function (x) { return String(x.id) === String(userId); })[0];
+      if (!row) throw new Error('Utilisateur introuvable.');
+      data.sheet.getRange(row.__row, data.headers.indexOf('code_acces_hash') + 1).setValue(sha256_(salt_() + ':' + code));
+      audit_(admin, 'code_acces', 'utilisateurs', row.id, null, null, 'Code d\'accès défini');
+      return { ok: true };
+    });
   });
 }
 
@@ -382,12 +399,13 @@ function setupSpreadsheet() {
     });
     par.sheet.getRange(2, 1, rows.length, par.headers.length).setValues(rows);
   }
-  // Six terrains à compléter (horaires vides = inconnus).
-  var ter = readSheet_('terrains');
+  // Six terrains, horaires confirmés 8 h – 21 h ; indoor en service depuis le 31/08/2026.
+  var ter = readSheet_('terrains'), H = globalThis.Padel.schema.HORAIRES_TERRAINS;
   if (!ter.rows.length) {
     var t = [];
-    for (var n = 1; n <= 6; n++) t.push(rowValues_(ter.headers, { id: 'TER-' + n, numero: n, nom: 'Terrain ' + n + ' (à nommer)', lieu: n <= 3 ? 'indoor' : 'outdoor', statut: 'actif', archive: false,
-      commentaire: 'Numérotation et répartition indoor/outdoor à confirmer ; horaires à renseigner.', cree_le: now_(), cree_par: 'setupSpreadsheet' }));
+    for (var n = 1; n <= 6; n++) t.push(rowValues_(ter.headers, { id: 'TER-' + n, numero: n, nom: (n <= 3 ? 'Indoor ' : 'Outdoor ') + n, lieu: n <= 3 ? 'indoor' : 'outdoor',
+      date_mise_en_service: n <= 3 ? '2026-08-31' : '', horaires_lun: H, horaires_mar: H, horaires_mer: H, horaires_jeu: H, horaires_ven: H, horaires_sam: H, horaires_dim: H,
+      statut: 'actif', archive: false, commentaire: 'Noms et numérotation à ajuster si besoin.', cree_le: now_(), cree_par: 'setupSpreadsheet' }));
     ter.sheet.getRange(2, 1, t.length, ter.headers.length).setValues(t);
   }
   // Le propriétaire devient administrateur s'il n'y a encore personne.
@@ -395,6 +413,14 @@ function setupSpreadsheet() {
   if (!usr.rows.length) {
     var me = Session.getEffectiveUser().getEmail();
     usr.sheet.appendRow(rowValues_(usr.headers, { id: 'USR-ADMIN', email: me, nom_affiche: 'Anthony De Greef', role: 'admin', actif: true, archive: false, cree_le: now_(), cree_par: 'setupSpreadsheet' }));
+    // Gilles : seul coach. Son e-mail est à saisir dans l'application (Paramètres → Utilisateurs), puis le cocher « actif ».
+    usr.sheet.appendRow(rowValues_(usr.headers, { id: 'USR-GILLES', email: '', nom_affiche: 'Gilles', role: 'coach', actif: false, archive: false, cree_le: now_(), cree_par: 'setupSpreadsheet' }));
+  }
+  // Offres confirmées (25 €/séance/personne, adultes et juniors).
+  var off = readSheet_('offres');
+  if (!off.rows.length) {
+    var o = globalThis.Padel.schema.INITIAL_OFFRES.map(function (x) { return rowValues_(off.headers, Object.assign({}, x, { archive: false, cree_le: now_(), cree_par: 'setupSpreadsheet' })); });
+    off.sheet.getRange(2, 1, o.length, off.headers.length).setValues(o);
   }
   // Protection : journal d'audit et empreintes de codes en avertissement.
   var aud = ss.getSheetByName('Journal_Audit');

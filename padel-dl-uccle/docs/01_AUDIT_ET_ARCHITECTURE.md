@@ -29,9 +29,9 @@ Aucun fichier de données réelles n'a été fourni. Tous les chiffres visibles 
 
 | # | Sujet | Constat | Traitement retenu |
 |---|---|---|---|
-| C1 | Taux de Gilles | La consigne dit « taux actuel connu : 35 €/h » ; le PDF dit « 35 €/h **à confirmer** comme valeur initiale ». | Chargé à 35 € avec la source « à confirmer », **sans date d'effet** : l'écran Qualité le signale jusqu'à confirmation. |
-| C2 | Tarif des collectifs juniors | Le tarif 25 €/35 € figure dans la ligne « Collectifs » ; le catalogue décrit séparément les collectifs juniors sans tarif. | Aucun tarif junior supposé : l'offre junior doit être créée avec son tarif confirmé ; sans tarif, le revenu est bloqué et signalé. |
-| C3 | Nombre de séances d'un cycle | « Cycle variable » : aucun nombre fourni. | Champ obligatoire de l'offre ou du cycle ; sans lui, revenu bloqué. |
+| C1 | Taux de Gilles | Consigne : « 35 €/h » ; PDF : « à confirmer ». | **Résolu (01/11/2026)** : seul coach, 35 €/h depuis le 31/08/2026. |
+| C2 | Tarif des collectifs juniors | Le tarif 25 €/35 € figure dans la ligne « Collectifs » ; le catalogue décrit séparément les collectifs juniors sans tarif. | **Résolu (01/11/2026)** : 25 €/séance/personne pour adultes et enfants, payable à l'avance. Le 35 €/1 h 30 du PDF n'est pas chargé (à reconfirmer). |
+| C3 | Nombre de séances d'un cycle | « Cycle variable ». | **Résolu (01/11/2026)** : flexible, idéalement 15 ou 20, fixé sur chaque cycle ; sans lui, revenu bloqué. |
 | C4 | Clinics | Listées dans les activités à suivre, mais « pas encore actives ». | Type d'activité créé en statut **archivé** (non proposé) ; réactivable dans Paramètres. |
 | C5 | Padel + Physical | « Anciennes références à ne pas généraliser. » | Aucun prix ni format par défaut ; chaque édition se saisit comme un événement. |
 | C6 | Tournois | « Un tournoi prévu chaque mois », statut gratuit/payant non précisé. | Aucun tournoi créé ; payant/gratuit à saisir par événement. |
@@ -41,7 +41,7 @@ Aucun fichier de données réelles n'a été fourni. Tous les chiffres visibles 
 
 ## 4. Données manquantes (bloquantes pour l'historique réel, pas pour l'outil)
 
-Voir la liste complète et à jour dans [`HYPOTHESES_DONNEES_MANQUANTES_LIMITES.md`](HYPOTHESES_DONNEES_MANQUANTES_LIMITES.md). Priorité 1 : date exacte d'ouverture indoor, exports ABS/application, plannings et présences des académies, heures et factures des coachs.
+Voir [`HYPOTHESES_DONNEES_MANQUANTES_LIMITES.md`](HYPOTHESES_DONNEES_MANQUANTES_LIMITES.md), qui intègre aussi les réponses d'Anthony du 01/11/2026. Restent en priorité : exports ABS/application, plannings et présences des académies, heures de Gilles depuis l'ouverture.
 
 ## 5. Architecture retenue
 
@@ -82,7 +82,7 @@ Voir la liste complète et à jour dans [`HYPOTHESES_DONNEES_MANQUANTES_LIMITES.
 
 | Élément | État |
 |---|---|
-| Calculs (occupation, taux, reconnaissance des cycles, coûts historisés, P&L, NPS, qualité, import) | Testés : `npm test` (30 tests). |
+| Calculs (occupation, taux, reconnaissance des cycles, coûts historisés, P&L, NPS, qualité, import) | Testés : `npm test` (31 tests). |
 | Serveur Apps Script (droits, verrouillage des heures, import/annulation, archivage, audit, mode code) | Testé contre une **simulation** de Google Sheets en mémoire. |
 | Interface (17 écrans × 4 rôles, iPhone et ordinateur) | Testée dans Chromium : aucune erreur JS, aucun débordement horizontal ; parcours séance rapide, heures coach, validation, paiement, import, rapport. |
 | **Connexion au vrai Google Sheets** | **Non testée** (aucun identifiant Google disponible dans cet environnement). À valider lors du premier déploiement en suivant le guide de connexion. |

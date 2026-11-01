@@ -27,7 +27,7 @@
 
     // --- Paramètres structurants
     if (!calc.param(ctx, 'date_ouverture_indoor')) add('P01', 'bloquant', 'parametres', 'Date exacte d\'ouverture des terrains indoor non renseignée : l\'historique n\'a pas de point de départ.', 'Paramètres');
-    if (!ctx.params.some(function (p) { return p.categorie === 'heures_pointe'; })) add('P02', 'attention', 'parametres', 'Heures de pointe / creuses non définies : l\'occupation pointe/creuse est indisponible.', 'Paramètres');
+    if (!ctx.params.some(function (p) { return p.categorie === 'heures_pointe'; })) add('P02', 'info', 'parametres', 'Heures de pointe / creuses non définies : l\'occupation pointe/creuse est indisponible.', 'Paramètres');
     if (!ctx.params.some(function (p) { return p.categorie === 'vacances'; })) add('P03', 'info', 'parametres', 'Périodes de vacances scolaires (Fédération Wallonie-Bruxelles) non encodées.', 'Paramètres');
     if (!calc.param(ctx, 'montants_tva')) add('P04', 'info', 'parametres', 'Convention HTVA / TVAC non confirmée pour les montants.', 'Paramètres');
     ctx.params.filter(function (p) { return p.categorie === 'taux_coach'; }).forEach(function (p) {
@@ -39,7 +39,11 @@
     D.offres.forEach(function (o) {
       if (o.statut === 'archive') return;
       if (u.num(o.tarif_seance) === null && u.num(o.prix_cycle) === null) add('T01', 'bloquant', 'tarifs', 'Offre « ' + o.nom + ' » sans tarif : revenu non calculable.', 'Offres', o.id);
-      if (u.num(o.nb_seances) === null) add('T02', 'bloquant', 'tarifs', 'Offre « ' + o.nom + ' » sans nombre de séances.', 'Offres', o.id);
+      if (u.num(o.nb_seances) === null) D.cycles.forEach(function (cy) {
+        if (cy.offre_id === o.id && cy.statut !== 'annule' && u.num(cy.nb_seances) === null &&
+          D.inscriptions.some(function (i) { return i.cycle_id === cy.id && i.statut === 'inscrit' && u.num(i.nb_seances_prevues) === null; }))
+          add('T02', 'bloquant', 'tarifs', 'Cycle « ' + cy.nom + ' » sans nombre de séances (l\'offre ne le fixe pas) : revenu non calculable.', 'Cycles', cy.id);
+      });
       if (!u.parseDate(o.date_effet)) add('T03', 'attention', 'tarifs', 'Offre « ' + o.nom + ' » sans date d\'effet.', 'Offres', o.id);
       var t = u.num(o.tarif_seance), pc = u.num(o.prix_cycle), n = u.num(o.nb_seances);
       if (t !== null && pc !== null && n !== null && Math.abs(t * n - pc) > 0.01) add('T04', 'attention', 'tarifs', 'Offre « ' + o.nom + ' » : prix du cycle (' + u.fmtEUR(pc, 2) + ') ≠ prix par séance × séances (' + u.fmtEUR(t * n, 2) + ').', 'Offres', o.id);

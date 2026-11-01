@@ -38,7 +38,7 @@ Tableau de bord · Séances (séance rapide, présences, génération des séanc
 
 ```bash
 npm run build     # assemble dist/ et régénère la documentation de structure et de droits
-npm test          # 30 tests : calculs, qualité, import, droits, rapports, serveur Apps Script simulé
+npm test          # 31 tests : calculs, qualité, import, droits, rapports, serveur Apps Script simulé
 npm run test:e2e  # Playwright : 17 écrans × 4 rôles × (iPhone, desktop) + parcours complets
 npm run serve     # démo sur http://localhost:8080
 ```

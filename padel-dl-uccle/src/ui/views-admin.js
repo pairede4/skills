@@ -385,7 +385,23 @@
   A['terr-add'] = function () { UI.editForm('terrains', null, { defaults: { statut: 'actif' } }); };
   var USR_FIELDS = ['email', 'nom_affiche', 'role', 'actif'];
   A['usr-add'] = function () { UI.editForm('utilisateurs', null, { fields: USR_FIELDS, defaults: { actif: true, role: 'coach' }, intro: 'L\'e-mail doit être celui du compte Google utilisé pour ouvrir l\'application.' }); };
-  A['usr-edit'] = function (el) { UI.editForm('utilisateurs', byId('utilisateurs', el.getAttribute('data-id')), { fields: USR_FIELDS, archivable: false, motif: 'Gestion des utilisateurs' }); };
+  A['usr-edit'] = function (el) {
+    var id = el.getAttribute('data-id');
+    UI.editForm('utilisateurs', byId('utilisateurs', id), { fields: USR_FIELDS, archivable: false, motif: 'Gestion des utilisateurs',
+      extraFooter: UI.btn('Définir le code d\'accès', 'usr-code', { cls: 'ghost', data: { id: id } }) });
+  };
+  A['usr-code'] = function (el) {
+    var a = app(), id = el.getAttribute('data-id');
+    if (!a.store.setAccessCode) { UI.toast('En démonstration, aucun code n\'est nécessaire.'); return; }
+    var body = '<p>Code personnel (8 caractères minimum) à communiquer de vive voix. Il n\'est jamais stocké en clair et ne pourra pas être relu : en cas d\'oubli, définissez-en un nouveau.</p>' +
+      '<label class="field"><span>Nouveau code</span><input class="input" type="text" name="code" autocomplete="off" minlength="8"></label><div class="form-errors" role="alert"></div>';
+    var m = UI.modal('Code d\'accès', body, { footer: '<span class="spacer"></span>' + UI.btn('Annuler', 'modal-close', { cls: 'ghost' }) + UI.btn('Enregistrer le code', 'usr-code-ok', { cls: 'primary' }) });
+    m.querySelector('[data-action="usr-code-ok"]').addEventListener('click', function () {
+      var code = m.querySelector('[name=code]').value;
+      if (code.length < 8) { m.querySelector('.form-errors').textContent = 'Au moins 8 caractères.'; return; }
+      a.store.setAccessCode(id, code).then(function () { UI.closeModal(); UI.toast('Code enregistré.', 'ok'); }).catch(function (x) { m.querySelector('.form-errors').textContent = x.message; });
+    });
+  };
   A['perm-toggle'] = function (el) {
     var a = app(), role = el.getAttribute('data-role'), perm = el.getAttribute('data-perm');
     var on = el.getAttribute('aria-pressed') !== 'true';
