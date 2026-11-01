@@ -499,14 +499,23 @@
     return rows;
   })();
 
-  /** Offres initiales confirmées : 25 € par séance et par personne, adultes et enfants, payable à l'avance.
+  /** Offres initiales confirmées par Anthony (01/11/2026), adultes et enfants, payables à l'avance :
+   *  25 €/personne pour une séance d'1 h, 35 €/personne pour une séance d'1 h 30 (même tarif si groupe incomplet).
    *  Le nombre de séances est flexible : il se fixe sur chaque cycle (idéalement 15 ou 20). */
-  var INITIAL_OFFRES = [
-    { id: 'OFF-ADULTE', nom: 'Collectif adulte – 25 €/séance', type_activite: 'collectif_adulte', public: 'adulte', duree_seance_min: '', nb_seances: '', tarif_seance: 25, prix_cycle: '',
-      taille_min: 2, taille_max: 4, date_effet: '2026-08-31', date_fin: '', statut: 'actif', source: 'Confirmé par Anthony (01/11/2026)', commentaire: 'Payable à l\'avance. Nombre de séances fixé par cycle (15 ou 20 conseillé).' },
-    { id: 'OFF-JUNIOR', nom: 'Collectif junior – 25 €/séance', type_activite: 'collectif_junior', public: 'junior', duree_seance_min: '', nb_seances: '', tarif_seance: 25, prix_cycle: '',
-      taille_min: 2, taille_max: 4, date_effet: '2026-08-31', date_fin: '', statut: 'actif', source: 'Confirmé par Anthony (01/11/2026)', commentaire: 'Payable à l\'avance. Nombre de séances fixé par cycle (15 ou 20 conseillé).' }
-  ];
+  var INITIAL_OFFRES = (function () {
+    var src = 'Confirmé par Anthony (01/11/2026)';
+    var com = 'Payable à l\'avance. Même tarif si groupe incomplet. Nombre de séances fixé par cycle (15 ou 20 conseillé).';
+    function o(id, nom, type, pub, min, tarif) {
+      return { id: id, nom: nom, type_activite: type, public: pub, duree_seance_min: min, nb_seances: '', tarif_seance: tarif, prix_cycle: '',
+        taille_min: 2, taille_max: 4, date_effet: '2026-08-31', date_fin: '', statut: 'actif', source: src, commentaire: com };
+    }
+    return [
+      o('OFF-ADULTE-60', 'Collectif adulte 1 h – 25 €/séance', 'collectif_adulte', 'adulte', 60, 25),
+      o('OFF-ADULTE-90', 'Collectif adulte 1 h 30 – 35 €/séance', 'collectif_adulte', 'adulte', 90, 35),
+      o('OFF-JUNIOR-60', 'Collectif junior 1 h – 25 €/séance', 'collectif_junior', 'junior', 60, 25),
+      o('OFF-JUNIOR-90', 'Collectif junior 1 h 30 – 35 €/séance', 'collectif_junior', 'junior', 90, 35)
+    ];
+  })();
   /** Horaires confirmés : 8 h – 21 h pour les six terrains. */
   var HORAIRES_TERRAINS = '08:00-21:00';
 

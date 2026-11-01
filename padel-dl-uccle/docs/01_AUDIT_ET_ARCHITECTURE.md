@@ -30,7 +30,7 @@ Aucun fichier de données réelles n'a été fourni. Tous les chiffres visibles 
 | # | Sujet | Constat | Traitement retenu |
 |---|---|---|---|
 | C1 | Taux de Gilles | Consigne : « 35 €/h » ; PDF : « à confirmer ». | **Résolu (01/11/2026)** : seul coach, 35 €/h depuis le 31/08/2026. |
-| C2 | Tarif des collectifs juniors | Le tarif 25 €/35 € figure dans la ligne « Collectifs » ; le catalogue décrit séparément les collectifs juniors sans tarif. | **Résolu (01/11/2026)** : 25 €/séance/personne pour adultes et enfants, payable à l'avance. Le 35 €/1 h 30 du PDF n'est pas chargé (à reconfirmer). |
+| C2 | Tarif des collectifs juniors | Le tarif 25 €/35 € figure dans la ligne « Collectifs » ; le catalogue décrit séparément les collectifs juniors sans tarif. | **Résolu (01/11/2026)** : adultes et enfants, 25 €/personne pour 1 h, 35 €/personne pour 1 h 30, payable à l'avance. |
 | C3 | Nombre de séances d'un cycle | « Cycle variable ». | **Résolu (01/11/2026)** : flexible, idéalement 15 ou 20, fixé sur chaque cycle ; sans lui, revenu bloqué. |
 | C4 | Clinics | Listées dans les activités à suivre, mais « pas encore actives ». | Type d'activité créé en statut **archivé** (non proposé) ; réactivable dans Paramètres. |
 | C5 | Padel + Physical | « Anciennes références à ne pas généraliser. » | Aucun prix ni format par défaut ; chaque édition se saisit comme un événement. |

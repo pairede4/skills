@@ -82,7 +82,7 @@ test('serveur : installation, droits, verrouillage des heures, archivage, import
   assert.equal(boot.db.parametres.find((p) => p.cle === 'date_ouverture_indoor').valeur, '2026-08-31');
   assert.ok(boot.db.terrains.every((t) => t.horaires_lun === '08:00-21:00' && t.horaires_dim === '08:00-21:00'));
   assert.equal(boot.db.terrains.filter((t) => t.date_mise_en_service === '2026-08-31').length, 3);
-  assert.equal(JSON.stringify(boot.db.offres.map((o) => o.tarif_seance)), '[25,25]');
+  assert.equal(JSON.stringify(boot.db.offres.map((o) => o.tarif_seance)), '[25,35,25,35]');
   const gilles = boot.db.utilisateurs.find((u) => u.id === 'USR-GILLES');
   assert.equal(gilles.role, 'coach'); assert.equal(gilles.actif, false, 'inactif tant que son e-mail n\'est pas saisi');
   assert.equal(boot.db.parametres.find((p) => p.categorie === 'taux_coach').reference, 'USR-GILLES');

@@ -111,7 +111,9 @@ test('paramètres initiaux : aucun tarif ni date inventés', () => {
   const gilles = schema.INITIAL_PARAMETRES.filter((p) => p.categorie === 'taux_coach');
   assert.equal(gilles.length, 1);
   assert.deepEqual([gilles[0].reference, gilles[0].valeur, gilles[0].date_effet], ['USR-GILLES', '35', '2026-08-31']);
-  assert.ok(schema.INITIAL_OFFRES.every((o) => o.tarif_seance === 25 && o.nb_seances === ''), '25 €/séance, séances fixées par cycle');
+  assert.deepEqual(schema.INITIAL_OFFRES.map((o) => [o.public, o.duree_seance_min, o.tarif_seance]),
+    [['adulte', 60, 25], ['adulte', 90, 35], ['junior', 60, 25], ['junior', 90, 35]]);
+  assert.ok(schema.INITIAL_OFFRES.every((o) => o.nb_seances === ''), 'séances fixées par cycle');
   assert.equal(schema.INITIAL_PARAMETRES.find((p) => p.cle === 'montants_tva').valeur, 'TVAC');
   assert.ok(!schema.INITIAL_PARAMETRES.some((p) => p.categorie === 'heures_pointe'), 'heures de pointe non inventées');
   assert.equal(schema.INITIAL_PARAMETRES.find((p) => p.cle === 'cout_horaire_terrain').valeur, '');

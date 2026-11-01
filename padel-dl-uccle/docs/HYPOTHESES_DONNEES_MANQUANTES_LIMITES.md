@@ -6,7 +6,7 @@
 |---|---|---|
 | Ouverture des terrains indoor | **31 août 2026** | `date_ouverture_indoor` ; mise en service des terrains indoor ; début de l'historique |
 | Coachs | **Gilles est le seul coach, 35 €/h** | Utilisateur `USR-GILLES` (e-mail à saisir) ; taux 35 €/h, date d'effet 31/08/2026 |
-| Tarif des collectifs | **25 € par séance et par personne, enfants et adultes, payable à l'avance** | Offres « Collectif adulte » et « Collectif junior » à 25 €/séance |
+| Tarif des collectifs | **25 € par personne pour 1 h, 35 € par personne pour 1 h 30, enfants et adultes, payable à l'avance** (même tarif si groupe incomplet) | Quatre offres : adulte et junior, 1 h à 25 €, 1 h 30 à 35 € |
 | Nombre de séances | **Cycles flexibles, idéalement 15 ou 20** | Fixé sur chaque cycle (champ « Nombre de séances du cycle ») ; sans lui, le revenu du cycle est bloqué et signalé |
 | Horaires des terrains | **8 h – 21 h** ; terrains gratuits pour les membres | Six terrains 08:00-21:00 tous les jours ; aucun coût de terrain ; pas d'heures de pointe définies (indicateur pointe/creuse affiché « indisponible », sans gravité) |
 | Google Workspace | **Non** | Connexion : compte Google pour Anthony, e-mail + code personnel pour les autres (défini dans l'application) |
@@ -25,7 +25,6 @@
 | 3 | Avis membres et enquêtes | Satisfaction / Imports | Satisfaction et NPS indisponibles |
 | 3 | Budget mensuel (facultatif) | Paramètres → Budget | Pas de comparaison budget/réel |
 | 3 | Format exact des exports ABS / application | — | L'association des colonnes se fait à la main au premier import |
-| 3 | Le tarif « 35 €/personne/1 h 30 » du cadrage PDF est-il toujours valable ? | Académies → Offres | Non créé : seule la règle 25 €/séance confirmée est chargée |
 
 ## 3. Hypothèses retenues (toutes modifiables)
 
