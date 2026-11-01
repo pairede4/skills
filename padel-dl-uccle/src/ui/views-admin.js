@@ -302,6 +302,7 @@
   var parTab = 'general';
   var PAR_TABS = {
     general: ['Général', 'general'], taux: ['Taux des coachs', 'taux_coach'], types: ['Types d\'activité', 'type_activite'], niveaux: ['Niveaux', 'niveau'],
+    objectifs: ['Objectifs', 'objectif'], indicateurs: ['Indicateurs Power BI', 'indicateur_club'],
     pointe: ['Heures de pointe', 'heures_pointe'], vacances: ['Vacances', 'vacances'], budget: ['Budget', 'budget'], categories: ['Catégories', null],
     terrains: ['Terrains', null], utilisateurs: ['Utilisateurs', null], permissions: ['Droits par rôle', null]
   };
@@ -311,6 +312,8 @@
     types: 'Catalogue des activités. Attributs : public=adulte|junior|mixte ; payant=oui|non ; famille=academie|decouverte|social|evenement|tournoi|prive. Archivé = plus proposé.',
     niveaux: 'Grille des 8 niveaux (indicatif Playtomic dans les attributs).',
     pointe: 'Plages de pointe par jour : Référence = 1 (lundi) … 7 (dimanche) ou « tous » ; Valeur = 17:00-22:00. Le reste des heures ouvertes est « creux ».',
+    objectifs: 'Objectifs : catégorie objectif. « seances_semaine » : Référence = code de l\'activité (padel_taster, afterwork, new_to_padel…), Valeur = séances par semaine, avec date d\'effet. « taux_penetration » : cible en %.',
+    indicateurs: 'Liste des indicateurs saisis depuis Power BI. Attributs : unite ; agregation = dernier (stock : membres, âge) ou somme (flux : réservations, nouveaux membres). Les chiffres eux-mêmes se saisissent dans Communauté & pénétration.',
     vacances: 'Périodes de vacances scolaires (FWB) pendant lesquelles les cycles sont suspendus : date d\'effet = début, date de fin = fin.',
     budget: 'Budget mensuel : Référence = AAAA-MM ; Clé = revenus_reconnus, encaissements, couts_coachs, couts_directs ou marge_brute ; Valeur = montant.'
   };

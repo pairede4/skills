@@ -24,6 +24,7 @@
     { id: 'inscriptions_evenements', label: 'Inscriptions aux événements', sheet: 'inscriptions', defaults: { statut: 'inscrit' } },
     { id: 'paiements', label: 'Paiements (réception / ABS)', sheet: 'paiements', defaults: { statut: 'a_verifier' } },
     { id: 'membres', label: 'Référentiel membres (ID, segment, niveau)', sheet: 'membres', defaults: { statut: 'actif' } },
+    { id: 'powerbi', label: 'Power BI – indicateurs club (une ligne par indicateur et période)', sheet: 'indicateurs', defaults: { segment: 'total', source: 'Power BI' } },
     { id: 'satisfaction', label: 'Réponses à l\'enquête de satisfaction', sheet: 'satisfaction', defaults: { source: 'import' } },
     { id: 'autre', label: 'Autre feuille…', sheet: null, defaults: {} }
   ];

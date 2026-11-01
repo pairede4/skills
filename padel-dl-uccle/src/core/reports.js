@@ -12,11 +12,12 @@
   var u = isNode ? require('./util.js') : root.Padel.util;
   var calc = isNode ? require('./calc.js') : root.Padel.calc;
   var quality = isNode ? require('./quality.js') : root.Padel.quality;
-  var mod = factory(u, calc, quality);
+  var community = isNode ? require('./community.js') : root.Padel.community;
+  var mod = factory(u, calc, quality, community);
   if (typeof module === 'object' && module.exports) module.exports = mod;
   root.Padel = root.Padel || {};
   root.Padel.reports = mod;
-})(typeof globalThis !== 'undefined' ? globalThis : this, function (u, calc, quality) {
+})(typeof globalThis !== 'undefined' ? globalThis : this, function (u, calc, quality, CM) {
   'use strict';
 
   var TEMPLATES = {
@@ -74,9 +75,36 @@
     if (nps.n < seuil) reco.push('Diffuser l\'enquête de satisfaction après chaque activité pour atteindre au moins ' + seuil + ' réponses.');
     if (dash.pnl.margeBrute.gaps.length) out.push('Résultat financier incomplet : ' + dash.pnl.margeBrute.gaps.length + ' donnée(s) manquante(s).');
     if (dash.pnl.coutsCoachsProvisoires.v) out.push('Coûts coachs en attente de validation : ' + u.fmtEUR(dash.pnl.coutsCoachsProvisoires.v) + ' (non inclus dans la marge).');
+    var fp = CM.freeProgram(ctx, f);
+    fp.rows.forEach(function (r) {
+      if (r.atteinte.v !== null && r.atteinte.v < 0.9) { out.push(r.label + ' : ' + r.realisees + ' séance(s) réalisée(s) pour un objectif de ' + u.fmtNum(r.objectif.v, 0) + ' (' + u.fmtPct(r.atteinte.v, 0) + ').'); reco.push('Rétablir la fréquence prévue des « ' + r.label + ' » ou ajuster l\'objectif.'); }
+      if (r.remplissage.v !== null && r.remplissage.v < 0.6 && r.realisees >= 3) reco.push('Relayer davantage les « ' + r.label + ' » (application, WhatsApp, accueil) : remplissage de ' + u.fmtPct(r.remplissage.v, 0) + '.');
+    });
+    var ci = CM.clubIndicators(ctx, f);
+    if (ci.derived.penetration.v !== null) {
+      out.push('Taux de pénétration padel : ' + u.fmtPct(ci.derived.penetration.v) + (ci.objectifPenetration !== null ? ' (objectif ' + u.fmtPct(ci.objectifPenetration, 0) + ')' : '') + '.');
+      if (ci.objectifPenetration !== null && ci.derived.penetration.v < ci.objectifPenetration) reco.push('Cibler les nouveaux membres et les non-joueurs avec des Padel Tasters dédiés pour rapprocher la pénétration de l\'objectif.');
+    }
     var eng = dash.engagement;
     if (eng.conversion.v !== null) out.push('Conversion des Tasters vers une autre activité sous ' + eng.delai + ' jours : ' + u.fmtPct(eng.conversion.v) + ' (' + eng.convertis + '/' + eng.tasters + ').');
     return { constats: out, suggestions: u.uniq(reco) };
+  }
+
+  function freeTable(fp) {
+    return { headers: ['Activité', 'Objectif / sem.', 'Réalisées / objectif', 'Atteinte', 'Remplissage', 'Présence', 'Participants', 'Nouveaux joueurs', 'Heures de terrain'],
+      rows: fp.rows.map(function (r) { return [r.label, r.objectifSemaine === null ? '–' : r.objectifSemaine, r.realisees + ' / ' + (r.objectif.v === null ? '?' : u.fmtNum(r.objectif.v, 0)),
+        u.fmtPct(r.atteinte.v, 0), u.fmtPct(r.remplissage.v), u.fmtPct(r.presence.v), u.fmtNum(r.participants.v, 0), u.fmtNum(r.nouveaux.v, 0), u.fmtHours(r.heuresTerrain.v)]; }) };
+  }
+  function communityKpis(ci, prev) {
+    var d = ci.derived, v = ci.values, pd = prev && prev.derived, pv = prev && prev.values;
+    function V(k) { return v[k] || u.missing(k); }
+    return [kpi('Taux de pénétration padel', d.penetration, P, pd && pd.penetration, { note: ci.objectifPenetration !== null ? 'objectif ' + u.fmtPct(ci.objectifPenetration, 0) : null }),
+      kpi('Membres actifs padel', V('membres_padel_actifs'), N, pv && pv.membres_padel_actifs),
+      kpi('Membres qui réservent un terrain', V('membres_reservants'), N, pv && pv.membres_reservants),
+      kpi('Réservations de terrains', V('reservations_terrains'), N, pv && pv.reservations_terrains),
+      kpi('Nouveaux membres qui jouent au padel', d.penetrationNouveaux, P, pd && pd.penetrationNouveaux),
+      kpi('Âge moyen des joueurs', V('age_moyen_padel'), function (x) { return u.fmtNum(x, 1) + ' ans'; }),
+      kpi('Participation aux événements', d.participationEvenements, P)];
   }
 
   function incidents(ctx, from, to) {
@@ -125,6 +153,7 @@
           kpi('Taux de présence', k.presence, P, pk.presence), kpi('No-show', k.noShow, P, pk.noShow, { inverse: true }),
           kpi('Occupation des terrains', k.occupation, P, pk.occupation), kpi('Participations', k.participations, N, pk.participations),
           kpi('Séances annulées', u.known(d.seances.count.annulees), N, u.known(prev.seances.count.annulees), { inverse: true })] }),
+        section('faits', 'Programme gratuit de la semaine', { table: freeTable(CM.freeProgram(ctx, f)) }),
         section('faits', 'Séances de la semaine', { table: {
           headers: ['Date', 'Horaire', 'Activité', 'Coach', 'Inscrits / capacité', 'Présents', 'Statut'],
           rows: d.seances.list.slice().sort(function (a, b) { return (a.date + a.heure_debut) < (b.date + b.heure_debut) ? -1 : 1; }).map(function (s) {
@@ -186,7 +215,8 @@
     var evol = months.map(function (m) {
       var mf = Object.assign({}, f, { from: m.from, to: m.to });
       var oc = calc.occupancy(ctx, mf), ss = calc.seancesSummary(ctx, mf), pl = calc.pnl(ctx, mf);
-      return [m.label, u.fmtPct(oc.rate.v), u.fmtNum(ss.count.realisees, 0), u.fmtNum(ss.participations.v, 0), u.fmtNum(ss.uniqueParticipants.v, 0), u.fmtEUR(pl.revenusReconnus.v), u.fmtEUR(pl.margeBrute.v)];
+      var cm = CM.clubIndicators(ctx, { from: u.startOfMonth(m.from), to: u.endOfMonth(m.from) });
+      return [m.label, u.fmtPct(cm.derived.penetration.v), u.fmtNum(cm.values.membres_reservants ? cm.values.membres_reservants.v : null, 0), u.fmtPct(oc.rate.v), u.fmtNum(ss.count.realisees, 0), u.fmtNum(ss.participations.v, 0), u.fmtNum(ss.uniqueParticipants.v, 0), u.fmtEUR(pl.revenusReconnus.v), u.fmtEUR(pl.margeBrute.v)];
     });
     var obs = observations(ctx, f, d);
     var q = quality.run(ctx).filter(function (a) { return a.gravite === 'bloquant'; });
@@ -200,7 +230,11 @@
           kpi('Occupation des 6 terrains', k.occupation, P), kpi('Participants uniques', k.participantsUniques, N), kpi('Activités organisées', k.activites, N),
           kpi('Revenus reconnus', p.revenusReconnus, E), kpi('Marge brute', p.margeBrute, E),
           kpi('NPS (n = ' + n.n + ')', n.score, function (v) { return v === null ? u.INDISPO : u.fmtNum(v, 0); }), kpi('Satisfaction /10', k.satisfaction, function (v) { return u.fmtNum(v, 1); })] }),
-        section('faits', 'Évolution depuis l\'ouverture de l\'indoor', { table: { headers: ['Mois', 'Occupation', 'Activités', 'Participations', 'Participants uniques', 'Revenus reconnus', 'Marge brute'], rows: evol } }),
+        section('faits', 'Développement de la communauté (Power BI)', { kpis: communityKpis(CM.clubIndicators(ctx, f)) }),
+        section('faits', 'Programme gratuit (Tasters, Afterworks, New to Padel…)', { table: freeTable(CM.freeProgram(ctx, f)),
+          kpis: (function () { var fp = CM.freeProgram(ctx, f); return [kpi('Objectif de séances atteint', fp.total.atteinte, P), kpi('Participants', fp.total.participants, N),
+            kpi('Nouveaux joueurs recrutés', fp.total.nouveaux, N), kpi('Conversion Taster', fp.conversion, P), kpi('Heures de terrain du programme', fp.total.heuresTerrain, H)]; })() }),
+        section('faits', 'Évolution depuis l\'ouverture de l\'indoor', { table: { headers: ['Mois', 'Pénétration', 'Membres qui réservent', 'Occupation', 'Activités', 'Participations', 'Participants uniques', 'Revenus reconnus', 'Marge brute'], rows: evol } }),
         section('faits', 'Utilisation des six terrains', { table: { headers: ['Terrain', 'Type', 'Heures disponibles', 'Heures utilisées', 'Occupation', 'dont activités encadrées', 'dont réservations libres'],
           rows: o.byTerrain.map(function (t) { return [t.label, t.lieu, u.fmtHours(t.available.v), u.fmtHours(t.used.v), u.fmtPct(t.rate.v), u.fmtPct(t.rateOrganised.v), u.fmtPct(t.rateLibre.v)]; }) },
           kpis: [kpi('Indoor', o.byLieu.indoor.rate, P), kpi('Outdoor', o.byLieu.outdoor.rate, P), kpi('Heures de pointe', o.peak.rate, P), kpi('Heures creuses', o.offpeak.rate, P)] }),
@@ -228,6 +262,10 @@
     var ds = months.map(function (m) { return dash(ctx, Object.assign({}, f, { from: m.from, to: m.to })); });
     function row(label, get, fmt) { return [label].concat(ds.map(function (d) { var x = get(d); return fmt(x.v); })); }
     var cmp = [
+      ['Taux de pénétration'].concat(months.map(function (m) { return u.fmtPct(CM.clubIndicators(ctx, { from: u.startOfMonth(m.from), to: u.endOfMonth(m.from) }).derived.penetration.v); })),
+      ['Membres qui réservent'].concat(months.map(function (m) { var v = CM.clubIndicators(ctx, { from: u.startOfMonth(m.from), to: u.endOfMonth(m.from) }).values.membres_reservants; return u.fmtNum(v ? v.v : null, 0); })),
+      ['Programme gratuit : objectif atteint'].concat(months.map(function (m) { return u.fmtPct(CM.freeProgram(ctx, Object.assign({}, f, { from: m.from, to: m.to })).total.atteinte.v, 0); })),
+      ['Nouveaux joueurs (programme gratuit)'].concat(months.map(function (m) { return u.fmtNum(CM.freeProgram(ctx, Object.assign({}, f, { from: m.from, to: m.to })).total.nouveaux.v, 0); })),
       row('Occupation', function (d) { return d.kpis.occupation; }, P),
       row('Activités organisées', function (d) { return d.kpis.activites; }, N),
       row('Remplissage', function (d) { return d.kpis.remplissage; }, P),

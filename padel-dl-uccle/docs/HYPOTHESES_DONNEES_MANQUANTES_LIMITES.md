@@ -9,6 +9,8 @@
 | Tarif des collectifs | **25 € par personne pour 1 h, 35 € par personne pour 1 h 30, enfants et adultes, payable à l'avance** (même tarif si groupe incomplet) | Quatre offres : adulte et junior, 1 h à 25 €, 1 h 30 à 35 € |
 | Nombre de séances | **Cycles flexibles, idéalement 15 ou 20** | Fixé sur chaque cycle (champ « Nombre de séances du cycle ») ; sans lui, le revenu du cycle est bloqué et signalé |
 | Horaires des terrains | **8 h – 21 h** ; terrains gratuits pour les membres | Six terrains 08:00-21:00 tous les jours ; aucun coût de terrain ; pas d'heures de pointe définies (indicateur pointe/creuse affiché « indisponible », sans gravité) |
+| Programme gratuit | **4 Padel Tasters d'1 h, 2 Afterworks d'1 h 30, 2 New to Padel d'1 h par semaine** ; inscriptions via l'application des membres | Objectifs hebdomadaires (Paramètres → Objectifs) ; suivi dans « Communauté & pénétration » |
+| Mission d'Anthony | Augmenter les réservations et le **taux de pénétration** (nouveaux membres et membres qui ne jouaient pas) | Écran « Communauté & pénétration », tableau de bord et rapports pour Laurent |
 | Google Workspace | **Non** | Connexion : compte Google pour Anthony, e-mail + code personnel pour les autres (défini dans l'application) |
 | TVA | **Ne pas en tenir compte, tout est TVAC** | `montants_tva = TVAC` ; aucun retraitement |
 
@@ -19,6 +21,9 @@
 | 1 | Exports ABS / application depuis le 31/08/2026 (réservations, annulations) – *annoncés* | Imports → « Export ABS / application » | Occupation limitée aux activités encadrées |
 | 1 | Plannings et présences des académies – *annoncés* | Imports ou Académies / Séances / Présences | Revenu reconnu, assiduité, participants uniques incomplets |
 | 1 | Heures et factures de Gilles depuis l'ouverture | Imports ou Heures coachs | Coûts coachs et marge incomplets |
+| 1 | **Chiffres Power BI** (membres du club, membres qui jouent et qui réservent, réservations, nouveaux membres, âge moyen, participants aux événements), mois par mois depuis septembre 2026 – *annoncés* | Communauté & pénétration → « Saisir les chiffres Power BI d'un mois », ou Imports → Power BI | Taux de pénétration et indicateurs de réservation indisponibles |
+| 1 | Définition Power BI de « membre actif padel » et, si elle existe, de leur taux de pénétration | Paramètres → Indicateurs Power BI | Le taux recalculé pourrait différer de celui de Power BI |
+| 2 | Objectif chiffré de taux de pénétration | Paramètres → Objectifs → `taux_penetration` | Pas de comparaison à l'objectif |
 | 2 | E-mails des utilisateurs (Gilles, réception, Laurent) | Paramètres → Utilisateurs | Accès à l'application |
 | 2 | Inscriptions et dépenses des événements | Événements, Paiements, Dépenses | Remplissage, coût et marge des événements |
 | 3 | Calendrier des vacances scolaires FWB (si les cycles doivent les sauter) | Paramètres → Vacances | La génération des séances ne saute pas les congés |

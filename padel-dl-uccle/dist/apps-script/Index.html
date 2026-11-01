@@ -635,7 +635,7 @@ pre.code { background: var(--line-2); padding: 10px; border-radius: var(--radius
       general: 'Règle générale', taux_coach: 'Taux horaire coach', type_activite: "Type d'activité",
       niveau: 'Niveau', heures_pointe: 'Heures de pointe', vacances: 'Vacances scolaires (cycles suspendus)',
       budget: 'Budget', categorie_depense: 'Catégorie de dépense', categorie_revenu: 'Catégorie de revenu',
-      permission: 'Permission (surcharge par rôle)'
+      permission: 'Permission (surcharge par rôle)', indicateur_club: 'Indicateur club (Power BI)', objectif: 'Objectif (programme gratuit, KPI)'
     },
     role: { admin: 'Administrateur', coach: 'Coach', reception: 'Réception', manager: 'Manager' },
     lieu: { indoor: 'Indoor', outdoor: 'Outdoor' },
@@ -667,7 +667,8 @@ pre.code { background: var(--line-2); padding: 10px; border-radius: var(--radius
       jamais: 'Jamais', moins_1_mois: "Moins d'une fois par mois", '1_3_mois': '1 à 3 fois par mois',
       '1_semaine': 'Une fois par semaine', '2_plus_semaine': 'Deux fois ou plus par semaine'
     },
-    source_satisfaction: { formulaire: 'Formulaire app', papier: 'Papier', import: 'Import' }
+    source_satisfaction: { formulaire: 'Formulaire app', papier: 'Papier', import: 'Import' },
+    segment_kpi: { total: 'Total', adulte: 'Adultes', junior: 'Juniors' }
   };
 
   function c(n, t, req, label, extra) {
@@ -1002,6 +1003,22 @@ pre.code { background: var(--line-2); padding: 10px; border-radius: var(--radius
       ]
     },
     {
+      key: 'indicateurs', tab: 'Indicateurs_Club', label: 'Indicateurs club (Power BI)', prefix: 'KPI',
+      extra: true,
+      desc: 'Feuille ajoutée : chiffres du club transmis par Power BI (membres, joueurs de padel, réservations, âge moyen…), une ligne par indicateur et par période. Sert au taux de pénétration et aux rapports pour Laurent. Rien n\'est estimé : une période sans ligne est « donnée indisponible ».',
+      naturalKey: ['indicateur', 'segment', 'date_debut', 'date_fin'],
+      cols: [
+        c('id', 'id', true, 'ID'),
+        c('date_debut', 'date', true, 'Début de la période'),
+        c('date_fin', 'date', true, 'Fin de la période'),
+        c('indicateur', 'enum', true, 'Indicateur', { enumParam: 'indicateur_club' }),
+        c('segment', 'enum', true, 'Segment', { enumName: 'segment_kpi' }),
+        c('valeur', 'number', true, 'Valeur'),
+        c('source', 'text', false, 'Source', { help: 'Ex. Power BI – rapport Membres, export du 05/12/2026.' }),
+        c('commentaire', 'text', false, 'Commentaire')
+      ]
+    },
+    {
       key: 'imports', tab: 'Imports', label: 'Imports', prefix: 'IMP',
       desc: 'Traçabilité de chaque import (source, date, auteur, résultat). Annuler un import archive toutes ses lignes.',
       naturalKey: ['id'],
@@ -1099,6 +1116,25 @@ pre.code { background: var(--line-2); padding: 10px; border-radius: var(--radius
       p('type_activite', t[0], t[1], { libelle: t[1], attributs: t[2], statut: t[0] === 'clinic' ? 'archive' : 'actif',
         description: t[0] === 'clinic' ? 'Pas encore actives : ne rien annoncer avant publication.' : (t[0] === 'padel_physical' ? 'Ponctuel ; anciennes références à ne pas généraliser.' : '') });
     });
+    // Indicateurs club (Power BI). attributs : unite ; agregation = dernier (stock, ex. nombre de membres) ou somme (flux).
+    [
+      ['membres_club_total', 'Membres du club (total)', 'unite=membres; agregation=dernier'],
+      ['membres_padel_actifs', 'Membres ayant joué au padel sur la période', 'unite=membres; agregation=dernier'],
+      ['membres_reservants', 'Membres ayant réservé un terrain sur la période', 'unite=membres; agregation=dernier'],
+      ['reservations_terrains', 'Réservations de terrains', 'unite=réservations; agregation=somme'],
+      ['heures_reservees', 'Heures de terrain réservées', 'unite=heures; agregation=somme'],
+      ['nouveaux_membres_club', 'Nouveaux membres du club', 'unite=membres; agregation=somme'],
+      ['nouveaux_membres_padel', 'Nouveaux membres ayant joué au padel', 'unite=membres; agregation=somme'],
+      ['nouveaux_joueurs_padel', 'Membres existants ayant commencé le padel', 'unite=membres; agregation=somme'],
+      ['age_moyen_padel', 'Âge moyen des joueurs de padel', 'unite=ans; agregation=dernier'],
+      ['age_moyen_club', 'Âge moyen des membres du club', 'unite=ans; agregation=dernier'],
+      ['participants_evenements', 'Participants aux événements padel', 'unite=personnes; agregation=somme'],
+      ['taux_penetration_powerbi', 'Taux de pénétration (calculé par Power BI)', 'unite=pourcent; agregation=dernier']
+    ].forEach(function (k) { p('indicateur_club', k[0], k[1], { libelle: k[1], attributs: k[2], source: 'Liste proposée – à aligner sur Power BI' }); });
+    // Objectifs du programme gratuit (séances par semaine), confirmés par Anthony le 01/11/2026.
+    [['padel_taster', '4', '4 Padel Tasters d\'1 h par semaine'], ['afterwork', '2', '2 Afterworks d\'1 h 30 par semaine'], ['new_to_padel', '2', '2 New to Padel Social Sessions d\'1 h par semaine']]
+      .forEach(function (o) { p('objectif', 'seances_semaine', o[1], { reference: o[0], libelle: o[2], date_effet: '2026-08-31', source: 'Confirmé par Anthony (01/11/2026)' }); });
+    p('objectif', 'taux_penetration', '', { libelle: 'Objectif de taux de pénétration (%)', source: 'À FIXER', description: 'Cible à atteindre, en %.' });
     ['materiel', 'prix_recompenses', 'catering', 'evenement', 'autre'].forEach(function (k) {
       p('categorie_depense', k, { materiel: 'Matériel', prix_recompenses: 'Prix et récompenses', catering: 'Catering', evenement: 'Coûts d\'événement', autre: 'Autre' }[k]);
     });
@@ -1179,6 +1215,7 @@ pre.code { background: var(--line-2); padding: 10px; border-radius: var(--radius
     'rapports.export': 'Exporter les rapports (PDF, CSV)',
     'qualite.view': 'Voir la qualité des données',
     'imports.run': 'Importer des fichiers et annuler un import',
+    'indicateurs.edit': 'Saisir les indicateurs club (Power BI)',
     'parametres.view': 'Voir les paramètres',
     'parametres.edit': 'Modifier les paramètres (tarifs, taux, règles)',
     'utilisateurs.edit': 'Gérer les utilisateurs et les rôles',
@@ -1222,7 +1259,7 @@ pre.code { background: var(--line-2); padding: 10px; border-radius: var(--radius
     seances: ['seances.edit', 'seances.edit_own'], inscriptions: ['inscriptions.edit'], presences: ['presences.edit'],
     heures: ['heures.own', 'heures.validate', 'heures.pay'], paiements: ['paiements.edit'], depenses: ['depenses.edit'],
     evenements: ['evenements.edit'], satisfaction: ['satisfaction.edit'], occupation: ['terrains.edit'],
-    imports: ['imports.run'], audit: []
+    imports: ['imports.run'], indicateurs: ['indicateurs.edit'], audit: []
   };
   /** Permission requise pour lire une feuille. */
   var READ = {
@@ -1233,7 +1270,7 @@ pre.code { background: var(--line-2); padding: 10px; border-radius: var(--radius
     presences: ['seances.view', 'dashboard.view'], heures: ['heures.own', 'heures.view_all'],
     paiements: ['paiements.view', 'pnl.view'], depenses: ['depenses.view', 'pnl.view'],
     evenements: ['evenements.view', 'dashboard.view'], satisfaction: ['satisfaction.view'],
-    occupation: ['terrains.view'], imports: ['imports.run'], audit: ['audit.view']
+    occupation: ['terrains.view'], indicateurs: ['dashboard.view', 'rapports.view'], imports: ['imports.run'], audit: ['audit.view']
   };
 
   function canRead(perms, sheetKey) { return (READ[sheetKey] || []).some(function (p) { return perms[p]; }); }
@@ -1278,7 +1315,7 @@ pre.code { background: var(--line-2); padding: 10px; border-radius: var(--radius
   function context(db, today) {
     var ctx = { db: {}, today: today || u.parseDate(new Date()) };
     ['parametres', 'utilisateurs', 'terrains', 'membres', 'offres', 'cycles', 'seances', 'inscriptions', 'presences',
-      'heures', 'paiements', 'depenses', 'evenements', 'satisfaction', 'occupation', 'imports', 'audit']
+      'heures', 'paiements', 'depenses', 'evenements', 'satisfaction', 'occupation', 'indicateurs', 'imports', 'audit']
       .forEach(function (k) { ctx.db[k] = live(db[k]); });
     var D = ctx.db;
     ctx.params = D.parametres.filter(function (p) { return p.statut !== 'archive'; });
@@ -2337,6 +2374,7 @@ pre.code { background: var(--line-2); padding: 10px; border-radius: var(--radius
       var noOcc = D.occupation.length === 0;
       if (noOcc) add('PE2', 'attention', 'periodes', 'Aucune réservation libre importée (exports ABS / application) : l\'occupation ne reflète que les activités encadrées.', 'Occupation_Terrains');
     }
+    if (!D.indicateurs.length) add('PE4', 'attention', 'periodes', 'Aucun chiffre Power BI encodé : taux de pénétration, membres qui réservent et âge moyen indisponibles.', 'Indicateurs_Club');
     if (!D.satisfaction.length) add('PE3', 'info', 'periodes', 'Aucun avis membre : satisfaction et NPS indisponibles.', 'Satisfaction');
 
     var order = { bloquant: 0, attention: 1, info: 2 };
@@ -2345,6 +2383,211 @@ pre.code { background: var(--line-2); padding: 10px; border-radius: var(--radius
   }
 
   return { run: run, CATS: CATS };
+});
+
+/* ---- src/core/community.js ---- */
+/**
+ * Indicateurs de développement de la communauté padel :
+ *   - programme gratuit (Tasters, Afterworks, New to Padel…) comparé aux objectifs hebdomadaires ;
+ *   - indicateurs du club transmis par Power BI (feuille Indicateurs_Club) et ratios dérivés,
+ *     dont le taux de pénétration.
+ * Aucune valeur n'est estimée : sans chiffre Power BI, le ratio est « donnée indisponible ».
+ * Formules : docs/FORMULES_FINANCIERES.md, section 10.
+ */
+(function (root, factory) {
+  var isNode = typeof require === 'function' && typeof module === 'object';
+  var u = isNode ? require('./util.js') : root.Padel.util;
+  var calc = isNode ? require('./calc.js') : root.Padel.calc;
+  var mod = factory(u, calc);
+  if (typeof module === 'object' && module.exports) module.exports = mod;
+  root.Padel = root.Padel || {};
+  root.Padel.community = mod;
+})(typeof globalThis !== 'undefined' ? globalThis : this, function (u, calc) {
+  'use strict';
+
+  // ------------------------------------------------------------------ objectifs
+  /** Objectif « séances par semaine » d'un type d'activité, en vigueur à une date. */
+  function weeklyObjective(ctx, type, date) {
+    var best = null;
+    ctx.params.forEach(function (p) {
+      if (p.categorie !== 'objectif' || p.cle !== 'seances_semaine' || String(p.reference).trim() !== type) return;
+      var de = u.parseDate(p.date_effet), df = u.parseDate(p.date_fin);
+      if (date && de && de > date) return;
+      if (date && df && df < date) return;
+      if (!best || (de || '') >= (u.parseDate(best.date_effet) || '')) best = p;
+    });
+    return best ? u.num(best.valeur) : null;
+  }
+  function objectiveValue(ctx, cle) {
+    var p = ctx.params.filter(function (x) { return x.categorie === 'objectif' && x.cle === cle; })[0];
+    return p ? u.num(p.valeur) : null;
+  }
+
+  /** Types suivis dans le programme gratuit : ceux qui ont un objectif, ou gratuits et encadrés. */
+  function freeTypes(ctx) {
+    var out = {};
+    ctx.params.forEach(function (p) { if (p.categorie === 'objectif' && p.cle === 'seances_semaine') out[p.reference] = 1; });
+    Object.keys(ctx.types).forEach(function (k) { var t = ctx.types[k]; if (t.actif && u.bool(t.attrs.payant) === false && t.attrs.famille !== 'prive') out[k] = 1; });
+    return Object.keys(out);
+  }
+
+  function minutes(s) { var a = u.toMinutes(s.heure_debut), b = u.toMinutes(s.heure_fin); return a === null || b === null || b <= a ? null : b - a; }
+
+  /** Première participation de chaque membre (toutes activités encadrées confondues). */
+  function firstParticipation(ctx) {
+    var first = {};
+    ctx.db.seances.forEach(function (s) {
+      if (s.statut !== 'realisee') return;
+      var d = u.parseDate(s.date);
+      (ctx.presencesBySeance[s.id] || []).forEach(function (p) {
+        if (p.statut !== 'present') return;
+        if (!first[p.membre_id] || d < first[p.membre_id].d) first[p.membre_id] = { d: d, t: s.type_activite };
+      });
+    });
+    return first;
+  }
+
+  /**
+   * Programme gratuit sur une période.
+   * Atteinte de l'objectif = séances réalisées ÷ (objectif hebdomadaire × semaines écoulées).
+   * Les semaines sont comptées jusqu'à aujourd'hui (une période en cours n'est pas pénalisée pour le futur).
+   */
+  function freeProgram(ctx, f) {
+    var from = f.from, to = f.to;
+    if (ctx.histStart && from < ctx.histStart) from = ctx.histStart;
+    var end = to > ctx.today ? ctx.today : to;
+    var weeks = end >= from ? (u.daysBetween(from, end) + 1) / 7 : 0;
+    var first = firstParticipation(ctx);
+    var occ = calc.occupancy(ctx, { from: f.from, to: f.to, terrains: f.terrains, lieu: f.lieu });
+    var totals = { realisees: 0, realiseesObj: 0, objectif: 0, sansObjectif: [], terrainH: 0, places: 0, nouveaux: {}, membres: {} };
+    var rows = freeTypes(ctx).filter(function (t) { return !f.type || f.type === t; }).map(function (t) {
+      var ff = Object.assign({}, f, { type: t });
+      var ss = calc.seancesSummary(ctx, ff);
+      var done = ss.list.filter(function (s) { return s.statut === 'realisee' && u.parseDate(s.date) <= end; });
+      var obj = weeklyObjective(ctx, t, end);
+      var target = obj === null ? null : obj * weeks;
+      var terrainMin = 0, places = 0, placesUnknown = 0;
+      done.forEach(function (s) {
+        var m = minutes(s); if (m !== null) terrainMin += m * Math.max(1, u.splitList(s.terrains).length);
+        var c = calc.seanceCounts(ctx, s); if (c.capacite === null) placesUnknown++; else places += c.capacite;
+      });
+      var membres = Object.keys(ss.members);
+      var nouveaux = membres.filter(function (m) { return first[m] && first[m].t === t && u.inRange(first[m].d, from, to); });
+      totals.realisees += done.length; totals.terrainH += terrainMin / 60; totals.places += places;
+      if (target === null) totals.sansObjectif.push(calc.typeLabel(ctx, t)); else { totals.objectif += target; totals.realiseesObj += done.length; }
+      membres.forEach(function (m) { totals.membres[m] = 1; });
+      nouveaux.forEach(function (m) { totals.nouveaux[m] = 1; });
+      return {
+        type: t, label: calc.typeLabel(ctx, t), objectifSemaine: obj,
+        realisees: done.length, planifiees: ss.count.planifiees, annulees: ss.count.annulees,
+        objectif: target === null ? u.missing('Objectif hebdomadaire non défini pour ' + calc.typeLabel(ctx, t)) : u.known(u.round(target, 1)),
+        atteinte: target === null ? u.missing('Objectif non défini') : u.ratio(done.length, target, 'Atteinte de l\'objectif'),
+        places: u.m(places, placesUnknown ? [placesUnknown + ' séance(s) sans capacité'] : []),
+        remplissage: ss.fill, presence: ss.presence, noShow: ss.noShow, participations: ss.participations,
+        participants: ss.uniqueParticipants, nouveaux: u.m(nouveaux.length, ss.uniqueParticipants.gaps),
+        heuresTerrain: u.known(u.round(terrainMin / 60, 2))
+      };
+    });
+    var eng = calc.engagement(ctx, f);
+    return {
+      weeks: u.round(weeks, 1), rows: rows,
+      total: {
+        realisees: u.known(totals.realisees),
+        objectif: totals.objectif ? u.known(u.round(totals.objectif, 1)) : u.missing('Aucun objectif hebdomadaire défini'),
+        atteinte: totals.objectif ? u.ratio(totals.realiseesObj, totals.objectif, 'Atteinte de l\'objectif') : u.missing('Aucun objectif hebdomadaire défini'),
+        sansObjectif: totals.sansObjectif,
+        heuresTerrain: u.known(u.round(totals.terrainH, 2)),
+        partOccupation: u.ratio(u.known(totals.terrainH), occ.available, 'Part des heures disponibles'),
+        places: u.known(totals.places),
+        participants: u.known(Object.keys(totals.membres).length),
+        nouveaux: u.known(Object.keys(totals.nouveaux).length)
+      },
+      conversion: eng.conversion, tasters: eng.tasters, convertis: eng.convertis, delai: eng.delai
+    };
+  }
+
+  // ------------------------------------------------------------------ Power BI
+  function indicatorDefs(ctx) {
+    return ctx.params.filter(function (p) { return p.categorie === 'indicateur_club'; }).map(function (p) {
+      var a = calc.parseAttrs(p.attributs);
+      return { code: p.cle, label: p.libelle || p.valeur || p.cle, unite: a.unite || '', agregation: a.agregation === 'somme' ? 'somme' : 'dernier' };
+    });
+  }
+
+  /**
+   * Valeur d'un indicateur sur une période : lignes entièrement comprises dans la période.
+   * « somme » additionne les périodes (flux) ; « dernier » prend la période la plus récente (stock).
+   */
+  function indicatorValue(ctx, def, from, to, segment) {
+    var rows = ctx.db.indicateurs.filter(function (r) {
+      return r.indicateur === def.code && (r.segment || 'total') === (segment || 'total') &&
+        u.parseDate(r.date_debut) >= from && u.parseDate(r.date_fin) <= to && u.num(r.valeur) !== null;
+    });
+    if (!rows.length) return u.missing(def.label + ' : aucune donnée Power BI sur la période');
+    if (def.agregation === 'dernier') {
+      rows.sort(function (a, b) { return a.date_fin < b.date_fin ? 1 : -1; });
+      return u.m(u.num(rows[0].valeur), [], { row: rows[0] });
+    }
+    var covered = {};
+    rows.forEach(function (r) { u.eachDay(u.parseDate(r.date_debut), u.parseDate(r.date_fin)).forEach(function (d) { covered[d] = 1; }); });
+    var days = u.daysBetween(from, to) + 1, n = Object.keys(covered).length;
+    var v = rows.reduce(function (t, r) { return t + u.num(r.valeur); }, 0);
+    return u.m(v, n < days ? ['Période couverte à ' + Math.round(n / days * 100) + ' % par les chiffres Power BI'] : []);
+  }
+
+  /** Indicateurs club et ratios dérivés (dont le taux de pénétration). */
+  function clubIndicators(ctx, f, segment) {
+    var defs = indicatorDefs(ctx), vals = {};
+    defs.forEach(function (d) { vals[d.code] = indicatorValue(ctx, d, f.from, f.to, segment); });
+    function V(k) { return vals[k] || u.missing('Indicateur « ' + k + ' » non paramétré'); }
+    var fp = freeProgram(ctx, f);
+    var nouveauxPadel = u.sum([V('nouveaux_membres_padel'), V('nouveaux_joueurs_padel')]);
+    if (V('nouveaux_membres_padel').v === null && V('nouveaux_joueurs_padel').v === null) nouveauxPadel = u.missing('Nouveaux joueurs non transmis par Power BI');
+    var derived = {
+      penetration: u.ratio(V('membres_padel_actifs'), V('membres_club_total'), 'Taux de pénétration'),
+      penetrationPowerBI: V('taux_penetration_powerbi').v === null ? V('taux_penetration_powerbi') : u.known(V('taux_penetration_powerbi').v / 100),
+      tauxReservants: u.ratio(V('membres_reservants'), V('membres_club_total'), 'Part des membres qui réservent'),
+      penetrationNouveaux: u.ratio(V('nouveaux_membres_padel'), V('nouveaux_membres_club'), 'Pénétration des nouveaux membres'),
+      reservationsParReservant: u.ratio(V('reservations_terrains'), V('membres_reservants'), 'Réservations par membre'),
+      participationEvenements: u.ratio(V('participants_evenements'), V('membres_padel_actifs'), 'Participation aux événements'),
+      partRecruteeProgramme: u.ratio(fp.total.nouveaux, nouveauxPadel, 'Part des nouveaux joueurs passés par le programme gratuit')
+    };
+    var objectif = objectiveValue(ctx, 'taux_penetration');
+    return { defs: defs, values: vals, derived: derived, objectifPenetration: objectif === null ? null : objectif / 100 };
+  }
+
+  /** Participation aux événements suivis dans l'application (présents ÷ inscrits, présents ÷ capacité). */
+  function eventsParticipation(ctx, f) {
+    var ev = ctx.db.evenements.filter(function (e) { return e.statut === 'realise' && u.inRange(u.parseDate(e.date), f.from, f.to); });
+    var ins = 0, pres = 0, cap = 0, nP = 0, nC = 0;
+    ev.forEach(function (e) {
+      var i = u.num(e.nb_inscrits), p = u.num(e.nb_presents), c = u.num(e.capacite);
+      if (i !== null && p !== null) { ins += i; pres += p; } else nP++;
+      if (c !== null && p !== null) cap += c; else nC++;
+    });
+    return {
+      nombre: ev.length, presents: u.m(pres, nP ? [nP + ' événement(s) sans inscrits/présents'] : []),
+      presence: ev.length ? u.m(ins ? pres / ins : null, nP ? [nP + ' événement(s) exclus'] : []) : u.missing('Aucun événement réalisé'),
+      remplissage: ev.length ? u.m(cap ? pres / cap : null, nC ? [nC + ' événement(s) exclus'] : []) : u.missing('Aucun événement réalisé')
+    };
+  }
+
+  /** Série mensuelle des indicateurs clés (évolution depuis l'ouverture). */
+  function monthlyCommunity(ctx, from, to) {
+    var out = [];
+    for (var m = u.startOfMonth(from); m <= to; m = u.addMonths(m, 1)) {
+      var r = { from: m < from ? from : m, to: u.endOfMonth(m) > to ? to : u.endOfMonth(m) };
+      var ci = clubIndicators(ctx, { from: u.startOfMonth(m), to: u.endOfMonth(m) });
+      var fp = freeProgram(ctx, r);
+      out.push({ label: u.MOIS[+m.slice(5, 7) - 1].slice(0, 4) + '. ' + m.slice(2, 4), month: m.slice(0, 7), penetration: ci.derived.penetration,
+        reservants: ci.values.membres_reservants, reservations: ci.values.reservations_terrains, atteinte: fp.total.atteinte,
+        participants: fp.total.participants, nouveaux: fp.total.nouveaux });
+    }
+    return out;
+  }
+
+  return { weeklyObjective: weeklyObjective, freeTypes: freeTypes, freeProgram: freeProgram, indicatorDefs: indicatorDefs,
+    indicatorValue: indicatorValue, clubIndicators: clubIndicators, eventsParticipation: eventsParticipation, monthlyCommunity: monthlyCommunity };
 });
 
 /* ---- src/core/importer.js ---- */
@@ -2374,6 +2617,7 @@ pre.code { background: var(--line-2); padding: 10px; border-radius: var(--radius
     { id: 'inscriptions_evenements', label: 'Inscriptions aux événements', sheet: 'inscriptions', defaults: { statut: 'inscrit' } },
     { id: 'paiements', label: 'Paiements (réception / ABS)', sheet: 'paiements', defaults: { statut: 'a_verifier' } },
     { id: 'membres', label: 'Référentiel membres (ID, segment, niveau)', sheet: 'membres', defaults: { statut: 'actif' } },
+    { id: 'powerbi', label: 'Power BI – indicateurs club (une ligne par indicateur et période)', sheet: 'indicateurs', defaults: { segment: 'total', source: 'Power BI' } },
     { id: 'satisfaction', label: 'Réponses à l\'enquête de satisfaction', sheet: 'satisfaction', defaults: { source: 'import' } },
     { id: 'autre', label: 'Autre feuille…', sheet: null, defaults: {} }
   ];
@@ -2585,11 +2829,12 @@ pre.code { background: var(--line-2); padding: 10px; border-radius: var(--radius
   var u = isNode ? require('./util.js') : root.Padel.util;
   var calc = isNode ? require('./calc.js') : root.Padel.calc;
   var quality = isNode ? require('./quality.js') : root.Padel.quality;
-  var mod = factory(u, calc, quality);
+  var community = isNode ? require('./community.js') : root.Padel.community;
+  var mod = factory(u, calc, quality, community);
   if (typeof module === 'object' && module.exports) module.exports = mod;
   root.Padel = root.Padel || {};
   root.Padel.reports = mod;
-})(typeof globalThis !== 'undefined' ? globalThis : this, function (u, calc, quality) {
+})(typeof globalThis !== 'undefined' ? globalThis : this, function (u, calc, quality, CM) {
   'use strict';
 
   var TEMPLATES = {
@@ -2647,9 +2892,36 @@ pre.code { background: var(--line-2); padding: 10px; border-radius: var(--radius
     if (nps.n < seuil) reco.push('Diffuser l\'enquête de satisfaction après chaque activité pour atteindre au moins ' + seuil + ' réponses.');
     if (dash.pnl.margeBrute.gaps.length) out.push('Résultat financier incomplet : ' + dash.pnl.margeBrute.gaps.length + ' donnée(s) manquante(s).');
     if (dash.pnl.coutsCoachsProvisoires.v) out.push('Coûts coachs en attente de validation : ' + u.fmtEUR(dash.pnl.coutsCoachsProvisoires.v) + ' (non inclus dans la marge).');
+    var fp = CM.freeProgram(ctx, f);
+    fp.rows.forEach(function (r) {
+      if (r.atteinte.v !== null && r.atteinte.v < 0.9) { out.push(r.label + ' : ' + r.realisees + ' séance(s) réalisée(s) pour un objectif de ' + u.fmtNum(r.objectif.v, 0) + ' (' + u.fmtPct(r.atteinte.v, 0) + ').'); reco.push('Rétablir la fréquence prévue des « ' + r.label + ' » ou ajuster l\'objectif.'); }
+      if (r.remplissage.v !== null && r.remplissage.v < 0.6 && r.realisees >= 3) reco.push('Relayer davantage les « ' + r.label + ' » (application, WhatsApp, accueil) : remplissage de ' + u.fmtPct(r.remplissage.v, 0) + '.');
+    });
+    var ci = CM.clubIndicators(ctx, f);
+    if (ci.derived.penetration.v !== null) {
+      out.push('Taux de pénétration padel : ' + u.fmtPct(ci.derived.penetration.v) + (ci.objectifPenetration !== null ? ' (objectif ' + u.fmtPct(ci.objectifPenetration, 0) + ')' : '') + '.');
+      if (ci.objectifPenetration !== null && ci.derived.penetration.v < ci.objectifPenetration) reco.push('Cibler les nouveaux membres et les non-joueurs avec des Padel Tasters dédiés pour rapprocher la pénétration de l\'objectif.');
+    }
     var eng = dash.engagement;
     if (eng.conversion.v !== null) out.push('Conversion des Tasters vers une autre activité sous ' + eng.delai + ' jours : ' + u.fmtPct(eng.conversion.v) + ' (' + eng.convertis + '/' + eng.tasters + ').');
     return { constats: out, suggestions: u.uniq(reco) };
+  }
+
+  function freeTable(fp) {
+    return { headers: ['Activité', 'Objectif / sem.', 'Réalisées / objectif', 'Atteinte', 'Remplissage', 'Présence', 'Participants', 'Nouveaux joueurs', 'Heures de terrain'],
+      rows: fp.rows.map(function (r) { return [r.label, r.objectifSemaine === null ? '–' : r.objectifSemaine, r.realisees + ' / ' + (r.objectif.v === null ? '?' : u.fmtNum(r.objectif.v, 0)),
+        u.fmtPct(r.atteinte.v, 0), u.fmtPct(r.remplissage.v), u.fmtPct(r.presence.v), u.fmtNum(r.participants.v, 0), u.fmtNum(r.nouveaux.v, 0), u.fmtHours(r.heuresTerrain.v)]; }) };
+  }
+  function communityKpis(ci, prev) {
+    var d = ci.derived, v = ci.values, pd = prev && prev.derived, pv = prev && prev.values;
+    function V(k) { return v[k] || u.missing(k); }
+    return [kpi('Taux de pénétration padel', d.penetration, P, pd && pd.penetration, { note: ci.objectifPenetration !== null ? 'objectif ' + u.fmtPct(ci.objectifPenetration, 0) : null }),
+      kpi('Membres actifs padel', V('membres_padel_actifs'), N, pv && pv.membres_padel_actifs),
+      kpi('Membres qui réservent un terrain', V('membres_reservants'), N, pv && pv.membres_reservants),
+      kpi('Réservations de terrains', V('reservations_terrains'), N, pv && pv.reservations_terrains),
+      kpi('Nouveaux membres qui jouent au padel', d.penetrationNouveaux, P, pd && pd.penetrationNouveaux),
+      kpi('Âge moyen des joueurs', V('age_moyen_padel'), function (x) { return u.fmtNum(x, 1) + ' ans'; }),
+      kpi('Participation aux événements', d.participationEvenements, P)];
   }
 
   function incidents(ctx, from, to) {
@@ -2698,6 +2970,7 @@ pre.code { background: var(--line-2); padding: 10px; border-radius: var(--radius
           kpi('Taux de présence', k.presence, P, pk.presence), kpi('No-show', k.noShow, P, pk.noShow, { inverse: true }),
           kpi('Occupation des terrains', k.occupation, P, pk.occupation), kpi('Participations', k.participations, N, pk.participations),
           kpi('Séances annulées', u.known(d.seances.count.annulees), N, u.known(prev.seances.count.annulees), { inverse: true })] }),
+        section('faits', 'Programme gratuit de la semaine', { table: freeTable(CM.freeProgram(ctx, f)) }),
         section('faits', 'Séances de la semaine', { table: {
           headers: ['Date', 'Horaire', 'Activité', 'Coach', 'Inscrits / capacité', 'Présents', 'Statut'],
           rows: d.seances.list.slice().sort(function (a, b) { return (a.date + a.heure_debut) < (b.date + b.heure_debut) ? -1 : 1; }).map(function (s) {
@@ -2759,7 +3032,8 @@ pre.code { background: var(--line-2); padding: 10px; border-radius: var(--radius
     var evol = months.map(function (m) {
       var mf = Object.assign({}, f, { from: m.from, to: m.to });
       var oc = calc.occupancy(ctx, mf), ss = calc.seancesSummary(ctx, mf), pl = calc.pnl(ctx, mf);
-      return [m.label, u.fmtPct(oc.rate.v), u.fmtNum(ss.count.realisees, 0), u.fmtNum(ss.participations.v, 0), u.fmtNum(ss.uniqueParticipants.v, 0), u.fmtEUR(pl.revenusReconnus.v), u.fmtEUR(pl.margeBrute.v)];
+      var cm = CM.clubIndicators(ctx, { from: u.startOfMonth(m.from), to: u.endOfMonth(m.from) });
+      return [m.label, u.fmtPct(cm.derived.penetration.v), u.fmtNum(cm.values.membres_reservants ? cm.values.membres_reservants.v : null, 0), u.fmtPct(oc.rate.v), u.fmtNum(ss.count.realisees, 0), u.fmtNum(ss.participations.v, 0), u.fmtNum(ss.uniqueParticipants.v, 0), u.fmtEUR(pl.revenusReconnus.v), u.fmtEUR(pl.margeBrute.v)];
     });
     var obs = observations(ctx, f, d);
     var q = quality.run(ctx).filter(function (a) { return a.gravite === 'bloquant'; });
@@ -2773,7 +3047,11 @@ pre.code { background: var(--line-2); padding: 10px; border-radius: var(--radius
           kpi('Occupation des 6 terrains', k.occupation, P), kpi('Participants uniques', k.participantsUniques, N), kpi('Activités organisées', k.activites, N),
           kpi('Revenus reconnus', p.revenusReconnus, E), kpi('Marge brute', p.margeBrute, E),
           kpi('NPS (n = ' + n.n + ')', n.score, function (v) { return v === null ? u.INDISPO : u.fmtNum(v, 0); }), kpi('Satisfaction /10', k.satisfaction, function (v) { return u.fmtNum(v, 1); })] }),
-        section('faits', 'Évolution depuis l\'ouverture de l\'indoor', { table: { headers: ['Mois', 'Occupation', 'Activités', 'Participations', 'Participants uniques', 'Revenus reconnus', 'Marge brute'], rows: evol } }),
+        section('faits', 'Développement de la communauté (Power BI)', { kpis: communityKpis(CM.clubIndicators(ctx, f)) }),
+        section('faits', 'Programme gratuit (Tasters, Afterworks, New to Padel…)', { table: freeTable(CM.freeProgram(ctx, f)),
+          kpis: (function () { var fp = CM.freeProgram(ctx, f); return [kpi('Objectif de séances atteint', fp.total.atteinte, P), kpi('Participants', fp.total.participants, N),
+            kpi('Nouveaux joueurs recrutés', fp.total.nouveaux, N), kpi('Conversion Taster', fp.conversion, P), kpi('Heures de terrain du programme', fp.total.heuresTerrain, H)]; })() }),
+        section('faits', 'Évolution depuis l\'ouverture de l\'indoor', { table: { headers: ['Mois', 'Pénétration', 'Membres qui réservent', 'Occupation', 'Activités', 'Participations', 'Participants uniques', 'Revenus reconnus', 'Marge brute'], rows: evol } }),
         section('faits', 'Utilisation des six terrains', { table: { headers: ['Terrain', 'Type', 'Heures disponibles', 'Heures utilisées', 'Occupation', 'dont activités encadrées', 'dont réservations libres'],
           rows: o.byTerrain.map(function (t) { return [t.label, t.lieu, u.fmtHours(t.available.v), u.fmtHours(t.used.v), u.fmtPct(t.rate.v), u.fmtPct(t.rateOrganised.v), u.fmtPct(t.rateLibre.v)]; }) },
           kpis: [kpi('Indoor', o.byLieu.indoor.rate, P), kpi('Outdoor', o.byLieu.outdoor.rate, P), kpi('Heures de pointe', o.peak.rate, P), kpi('Heures creuses', o.offpeak.rate, P)] }),
@@ -2801,6 +3079,10 @@ pre.code { background: var(--line-2); padding: 10px; border-radius: var(--radius
     var ds = months.map(function (m) { return dash(ctx, Object.assign({}, f, { from: m.from, to: m.to })); });
     function row(label, get, fmt) { return [label].concat(ds.map(function (d) { var x = get(d); return fmt(x.v); })); }
     var cmp = [
+      ['Taux de pénétration'].concat(months.map(function (m) { return u.fmtPct(CM.clubIndicators(ctx, { from: u.startOfMonth(m.from), to: u.endOfMonth(m.from) }).derived.penetration.v); })),
+      ['Membres qui réservent'].concat(months.map(function (m) { var v = CM.clubIndicators(ctx, { from: u.startOfMonth(m.from), to: u.endOfMonth(m.from) }).values.membres_reservants; return u.fmtNum(v ? v.v : null, 0); })),
+      ['Programme gratuit : objectif atteint'].concat(months.map(function (m) { return u.fmtPct(CM.freeProgram(ctx, Object.assign({}, f, { from: m.from, to: m.to })).total.atteinte.v, 0); })),
+      ['Nouveaux joueurs (programme gratuit)'].concat(months.map(function (m) { return u.fmtNum(CM.freeProgram(ctx, Object.assign({}, f, { from: m.from, to: m.to })).total.nouveaux.v, 0); })),
       row('Occupation', function (d) { return d.kpis.occupation; }, P),
       row('Activités organisées', function (d) { return d.kpis.activites; }, N),
       row('Remplissage', function (d) { return d.kpis.remplissage; }, P),
@@ -3257,6 +3539,7 @@ pre.code { background: var(--line-2); padding: 10px; border-radius: var(--radius
     trophy: '<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/>',
     star: '<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>',
     chart: '<path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/>',
+    trend: '<path d="m22 7-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/>',
     file: '<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/>',
     upload: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>',
     check: '<path d="M20 6 9 17l-5-5"/>',
@@ -3718,6 +4001,7 @@ pre.code { background: var(--line-2); padding: 10px; border-radius: var(--radius
 
   var NAV = [
     { id: 'dashboard', label: 'Tableau de bord', icon: 'dashboard', perms: ['dashboard.view'] },
+    { id: 'communaute', label: 'Communauté & pénétration', icon: 'trend', perms: ['dashboard.view'] },
     { id: 'seances', label: 'Séances', icon: 'calendar', perms: ['seances.view'] },
     { id: 'heures', label: 'Heures coachs', icon: 'clock', perms: ['heures.own', 'heures.view_all'] },
     { id: 'paiements', label: 'Paiements', icon: 'receipt', perms: ['paiements.view'] },
@@ -3863,7 +4147,7 @@ pre.code { background: var(--line-2); padding: 10px; border-radius: var(--radius
       '<nav class="bottom-nav" aria-label="Navigation mobile">' + mobile.map(function (n) { return '<a href="#/' + n.id + '" class="' + (app.route === n.id ? 'active' : '') + '">' + icon(n.icon, 22) + '<span>' + e(shortLabel(n.label)) + '</span></a>'; }).join('') +
       (items.length > 4 ? '<button type="button" data-action="more-menu" class="' + (mobile.some(function (n) { return n.id === app.route; }) ? '' : 'active') + '">' + icon('more', 22) + '<span>Plus</span></button>' : '') + '</nav></div>';
   }
-  function shortLabel(l) { return { 'Tableau de bord': 'Accueil', 'Heures coachs': 'Heures', 'Qualité des données': 'Qualité' }[l] || l; }
+  function shortLabel(l) { return { 'Tableau de bord': 'Accueil', 'Heures coachs': 'Heures', 'Qualité des données': 'Qualité', 'Communauté & pénétration': 'Communauté' }[l] || l; }
 
   app.render = function () {
     var appEl = document.getElementById('app');
@@ -4020,6 +4304,11 @@ pre.code { background: var(--line-2); padding: 10px; border-radius: var(--radius
     var html = UI.periodBar();
     if (!calc.param(c, 'date_ouverture_indoor')) html += UI.notice('<strong>Date d\'ouverture indoor non renseignée.</strong> L\'historique n\'a pas de point de départ : renseignez-la dans Paramètres → Général.', 'warn');
     if (cur.occupancy.note) html += UI.notice(e(cur.occupancy.note), 'info');
+    var ciCur = Padel.community.clubIndicators(c, f), ciPrev = Padel.community.clubIndicators(c, a.filterObj({ from: pp.from, to: pp.to }));
+    var fpCur = Padel.community.freeProgram(c, f);
+    html += '<div class="kpi-group"><h3>Communauté <a class="sm" href="#/communaute">détail →</a></h3>' + UI.communityKpis(ciCur, ciPrev, true) +
+      '<div class="kpi-grid" style="margin-top:10px">' + UI.kpi({ label: 'Programme gratuit : objectif atteint', m: fpCur.total.atteinte, fmt: 'pct', sub: e(fpCur.total.realisees.v + ' séances réalisées') }) +
+      UI.kpi({ label: 'Nouveaux joueurs via le programme gratuit', m: fpCur.total.nouveaux }) + '</div></div>';
     html += '<div class="kpi-group"><h3>Terrains</h3><div class="kpi-grid">' +
       UI.kpi({ label: 'Heures disponibles', m: k.heuresDisponibles, fmt: 'h', prev: pk.heuresDisponibles }) +
       UI.kpi({ label: 'Heures réservées', m: k.heuresReservees, fmt: 'h', prev: pk.heuresReservees }) +
@@ -4686,6 +4975,135 @@ pre.code { background: var(--line-2); padding: 10px; border-radius: var(--radius
   };
 })(typeof globalThis !== 'undefined' ? globalThis : this);
 
+/* ---- src/ui/views-community.js ---- */
+/**
+ * Écran « Communauté & pénétration » : programme gratuit vs objectifs, indicateurs
+ * Power BI (taux de pénétration, membres qui réservent, âge moyen…) et saisie mensuelle.
+ */
+(function (root) {
+  'use strict';
+  var Padel = root.Padel;
+  var u = Padel.util, calc = Padel.calc, UI = Padel.ui, CM = Padel.community, schema = Padel.schema;
+  var e = u.escapeHtml, V = UI.views, A = UI.actions;
+  function app() { return UI.app; }
+
+  function unitFmt(unite) {
+    if (unite === 'pourcent') return function (v) { return u.fmtNum(v, 1) + ' %'; };
+    if (unite === 'ans') return function (v) { return u.fmtNum(v, 1) + ' ans'; };
+    if (unite === 'heures') return 'h';
+    return 'int';
+  }
+
+  /** Cartes KPI communauté (réutilisées par le tableau de bord). */
+  UI.communityKpis = function (cur, prev, compact) {
+    var d = cur.derived, v = cur.values, pd = prev ? prev.derived : null, pv = prev ? prev.values : null;
+    var obj = cur.objectifPenetration;
+    var cards = [
+      UI.kpi({ label: 'Taux de pénétration padel', m: d.penetration, fmt: 'pct', prev: pd && pd.penetration, help: 'Membres ayant joué au padel ÷ membres du club (Power BI)',
+        sub: obj !== null ? 'objectif ' + u.fmtPct(obj, 0) : (d.penetrationPowerBI.v !== null ? 'Power BI : ' + u.fmtPct(d.penetrationPowerBI.v) : '') }),
+      UI.kpi({ label: 'Membres qui réservent un terrain', m: v.membres_reservants || u.missing('non paramétré'), prev: pv && pv.membres_reservants, sub: d.tauxReservants.v !== null ? u.fmtPct(d.tauxReservants.v) + ' des membres du club' : '' }),
+      UI.kpi({ label: 'Réservations de terrains', m: v.reservations_terrains || u.missing('non paramétré'), prev: pv && pv.reservations_terrains, sub: d.reservationsParReservant.v !== null ? u.fmtNum(d.reservationsParReservant.v, 1) + ' par membre qui réserve' : '' }),
+      UI.kpi({ label: 'Nouveaux membres qui jouent', m: d.penetrationNouveaux, fmt: 'pct', prev: pd && pd.penetrationNouveaux, help: 'Nouveaux membres ayant joué au padel ÷ nouveaux membres du club' })
+    ];
+    if (!compact) cards = cards.concat([
+      UI.kpi({ label: 'Membres actifs padel', m: v.membres_padel_actifs || u.missing('non paramétré'), prev: pv && pv.membres_padel_actifs }),
+      UI.kpi({ label: 'Membres du club', m: v.membres_club_total || u.missing('non paramétré'), prev: pv && pv.membres_club_total }),
+      UI.kpi({ label: 'Âge moyen des joueurs', m: v.age_moyen_padel || u.missing('non paramétré'), fmt: unitFmt('ans'), sub: v.age_moyen_club && v.age_moyen_club.v !== null ? 'club : ' + u.fmtNum(v.age_moyen_club.v, 1) + ' ans' : '' }),
+      UI.kpi({ label: 'Participation aux événements', m: d.participationEvenements, fmt: 'pct', help: 'Participants aux événements ÷ membres actifs padel' }),
+      UI.kpi({ label: 'Nouveaux joueurs venus du programme gratuit', m: d.partRecruteeProgramme, fmt: 'pct', help: 'Nouveaux joueurs dont la 1re activité est gratuite ÷ nouveaux joueurs (Power BI)' })
+    ]);
+    return '<div class="kpi-grid">' + cards.join('') + '</div>';
+  };
+
+  UI.freeProgramTable = function (fp, id) {
+    return UI.table({ id: id || 'fp', search: false, csv: 'programme-gratuit', columns: [
+      { key: 'label', label: 'Activité' },
+      { key: 'obj', label: 'Objectif / sem.', num: true, render: function (r) { return r.objectifSemaine === null ? '<span class="na">–</span>' : String(r.objectifSemaine); }, sort: function (r) { return r.objectifSemaine; } },
+      { key: 'real', label: 'Réalisées', num: true, render: function (r) { return r.realisees + ' / ' + (r.objectif.v === null ? '?' : u.fmtNum(r.objectif.v, 0)); }, sort: function (r) { return r.realisees; } },
+      { key: 'att', label: 'Atteinte', num: true, render: function (r) { return UI.measure(r.atteinte, 'pct'); }, sort: function (r) { return r.atteinte.v; } },
+      { key: 'fill', label: 'Remplissage', num: true, render: function (r) { return UI.measure(r.remplissage, 'pct'); }, sort: function (r) { return r.remplissage.v; } },
+      { key: 'pres', label: 'Présence', num: true, render: function (r) { return UI.measure(r.presence, 'pct'); }, sort: function (r) { return r.presence.v; } },
+      { key: 'part', label: 'Participations', num: true, render: function (r) { return UI.measure(r.participations); }, sort: function (r) { return r.participations.v; } },
+      { key: 'uniq', label: 'Participants', num: true, render: function (r) { return UI.measure(r.participants); }, sort: function (r) { return r.participants.v; } },
+      { key: 'new', label: 'Nouveaux joueurs', num: true, render: function (r) { return UI.measure(r.nouveaux); }, sort: function (r) { return r.nouveaux.v; } },
+      { key: 'h', label: 'Heures de terrain', num: true, render: function (r) { return UI.measure(r.heuresTerrain, 'h'); }, sort: function (r) { return r.heuresTerrain.v; } }
+    ], rows: fp.rows.map(function (r) { r.id = r.type; return r; }), empty: 'Aucune activité gratuite paramétrée.' });
+  };
+
+  V.communaute = function () {
+    var a = app(), c = a.ctx, f = a.filterObj();
+    var pp = u.previousPeriod(a.period());
+    var ci = CM.clubIndicators(c, f), cp = CM.clubIndicators(c, a.filterObj({ from: pp.from, to: pp.to }));
+    var fp = CM.freeProgram(c, f);
+    var html = UI.periodBar();
+    var hasPBI = (a.db.indicateurs || []).some(function (r) { return r.archive !== true; });
+    html += '<div class="action-row">' + (a.can('indicateurs.edit') ? UI.btn('Saisir les chiffres Power BI d\'un mois', 'pbi-month', { cls: 'primary', icon: 'plus' }) : '') +
+      (a.can('imports.run') ? '<a class="btn ghost" href="#/imports">' + UI.icon('upload', 16) + '<span>Importer un export</span></a>' : '') + '</div>';
+    if (!hasPBI) html += UI.notice('<strong>Aucun chiffre Power BI encodé.</strong> Le taux de pénétration, le nombre de membres qui réservent, les réservations et l\'âge moyen restent « donnée indisponible » jusqu\'à la première saisie. Rien n\'est estimé.', 'warn');
+    html += '<div class="kpi-group"><h3>Pénétration et réservations (Power BI)</h3>' + UI.communityKpis(ci, cp) + '</div>';
+    html += '<div class="kpi-group"><h3>Programme gratuit (' + u.fmtNum(fp.weeks, 1) + ' semaine(s) écoulée(s))</h3><div class="kpi-grid">' +
+      UI.kpi({ label: 'Séances réalisées / objectif', m: fp.total.realisees, sub: 'objectif : ' + (fp.total.objectif.v === null ? u.INDISPO : u.fmtNum(fp.total.objectif.v, 0)) }) +
+      UI.kpi({ label: 'Atteinte de l\'objectif', m: fp.total.atteinte, fmt: 'pct', sub: fp.total.sansObjectif.length ? e('Sans objectif : ' + fp.total.sansObjectif.join(', ')) : '' }) +
+      UI.kpi({ label: 'Participants (uniques)', m: fp.total.participants }) +
+      UI.kpi({ label: 'Nouveaux joueurs recrutés', m: fp.total.nouveaux, help: 'Membres dont la toute première activité padel encadrée est une activité gratuite de la période' }) +
+      UI.kpi({ label: 'Conversion Taster (' + (fp.delai || '?') + ' j)', m: fp.conversion, fmt: 'pct', sub: fp.convertis + ' / ' + fp.tasters + ' Tasters' }) +
+      UI.kpi({ label: 'Heures de terrain du programme', m: fp.total.heuresTerrain, fmt: 'h', sub: fp.total.partOccupation.v !== null ? u.fmtPct(fp.total.partOccupation.v) + ' des heures disponibles' : '' }) + '</div></div>';
+    html += UI.card('Programme gratuit par activité', UI.freeProgramTable(fp, 'fp'), { sub: 'Objectifs modifiables dans Paramètres → Objectifs. Les inscriptions venant de l\'application des membres s\'importent via « Imports → Liste de présences ».' });
+    var series = CM.monthlyCommunity(c, a.histStart(), a.today);
+    html += '<div class="grid-2">' + UI.card('Taux de pénétration par mois', UI.lineChart(series.map(function (s) { return { label: s.label, v: s.penetration.v }; }), { fmt: function (v) { return u.fmtPct(v, 0); }, title: 'Taux de pénétration par mois' }), { sub: 'Source : chiffres Power BI encodés.' }) +
+      UI.card('Participants au programme gratuit par mois', UI.lineChart(series.map(function (s) { return { label: s.label, v: s.participants.v }; }), { color: UI.COLORS.C2, title: 'Participants au programme gratuit' })) + '</div>';
+    var rows = (a.db.indicateurs || []).filter(function (r) { return r.archive !== true; });
+    var defs = {}; CM.indicatorDefs(c).forEach(function (dd) { defs[dd.code] = dd; });
+    html += UI.card('Chiffres Power BI encodés', UI.table({ id: 'pbi', csv: 'indicateurs-club', defaultSort: 'date_fin', columns: [
+      { key: 'date_debut', label: 'Du', render: function (r) { return u.fmtDate(r.date_debut); } }, { key: 'date_fin', label: 'Au', render: function (r) { return u.fmtDate(r.date_fin); } },
+      { key: 'indicateur', label: 'Indicateur', render: function (r) { return e(defs[r.indicateur] ? defs[r.indicateur].label : r.indicateur); }, text: function (r) { return defs[r.indicateur] ? defs[r.indicateur].label : r.indicateur; } },
+      { key: 'segment', label: 'Segment', render: function (r) { return e(schema.ENUMS.segment_kpi[r.segment] || r.segment); } },
+      { key: 'valeur', label: 'Valeur', num: true, render: function (r) { return u.fmtNum(u.num(r.valeur), 1); }, sort: function (r) { return u.num(r.valeur); } },
+      { key: 'source', label: 'Source' }
+    ], rows: rows, onRow: a.can('indicateurs.edit') ? 'pbi-edit' : null, empty: 'Aucun chiffre encodé.' }),
+    { sub: 'Une ligne par indicateur et par période. Les chiffres « stock » (nombre de membres, âge) prennent la période la plus récente ; les flux (réservations, nouveaux membres) s\'additionnent.' });
+    return html;
+  };
+
+  A['pbi-edit'] = function (el) { UI.editForm('indicateurs', (app().db.indicateurs || []).filter(function (r) { return r.id === el.getAttribute('data-id'); })[0]); };
+
+  /** Saisie mensuelle : un champ par indicateur. */
+  A['pbi-month'] = function () {
+    var a = app(), defs = CM.indicatorDefs(a.ctx);
+    var prevMonth = u.addMonths(u.startOfMonth(a.today), -1).slice(0, 7);
+    var body = '<form class="form-grid" id="pbi-form"><label class="field"><span>Mois</span><input class="input" type="month" name="mois" value="' + prevMonth + '" required></label>' +
+      '<label class="field"><span>Segment</span><select class="input" name="segment">' + Object.keys(schema.ENUMS.segment_kpi).map(function (k) { return '<option value="' + k + '">' + schema.ENUMS.segment_kpi[k] + '</option>'; }).join('') + '</select></label>' +
+      '<label class="field full"><span>Source</span><input class="input" name="source" value="Power BI"></label>' +
+      defs.map(function (dd) { return '<label class="field"><span>' + e(dd.label) + '</span><input class="input" type="text" inputmode="decimal" name="k-' + e(dd.code) + '" placeholder="' + e(dd.unite) + '"><small class="help">' + (dd.agregation === 'somme' ? 'Total du mois' : 'Valeur à la fin du mois') + '</small></label>'; }).join('') +
+      '</form><p class="muted sm">Laissez vide ce que Power BI ne donne pas : la case restera « inconnue », jamais zéro. Une valeur déjà saisie pour ce mois est remplacée.</p><div class="form-errors" role="alert"></div>';
+    var m = UI.modal('Chiffres Power BI du mois', body, { wide: true, footer: '<span class="spacer"></span>' + UI.btn('Annuler', 'modal-close', { cls: 'ghost' }) + UI.btn('Enregistrer', 'pbi-save', { cls: 'primary', icon: 'check' }) });
+    function fill() {
+      var f = m.querySelector('#pbi-form'), mo = f.mois.value; if (!mo) return;
+      var from = mo + '-01', to = u.endOfMonth(from), seg = f.segment.value;
+      defs.forEach(function (dd) {
+        var r = (a.db.indicateurs || []).filter(function (x) { return x.archive !== true && x.indicateur === dd.code && (x.segment || 'total') === seg && x.date_debut === from && x.date_fin === to; })[0];
+        f['k-' + dd.code].value = r ? String(r.valeur).replace('.', ',') : '';
+      });
+    }
+    m.querySelector('[name=mois]').addEventListener('change', fill); m.querySelector('[name=segment]').addEventListener('change', fill); fill();
+    m.querySelector('[data-action="pbi-save"]').addEventListener('click', function () {
+      var f = m.querySelector('#pbi-form'), mo = f.mois.value, err = m.querySelector('.form-errors');
+      if (!/^\d{4}-\d{2}$/.test(mo)) { err.textContent = 'Choisissez un mois.'; return; }
+      var from = mo + '-01', to = u.endOfMonth(from), seg = f.segment.value, recs = [], bad = [];
+      defs.forEach(function (dd) {
+        var raw = f['k-' + dd.code].value.trim(); if (!raw) return;
+        var n = u.num(raw); if (n === null) { bad.push(dd.label); return; }
+        var ex = (a.db.indicateurs || []).filter(function (x) { return x.archive !== true && x.indicateur === dd.code && (x.segment || 'total') === seg && x.date_debut === from && x.date_fin === to; })[0];
+        recs.push(Object.assign({}, ex || {}, { date_debut: from, date_fin: to, indicateur: dd.code, segment: seg, valeur: n, source: f.source.value }));
+      });
+      if (bad.length) { err.textContent = 'Nombre illisible : ' + bad.join(', '); return; }
+      if (!recs.length) { err.textContent = 'Aucune valeur saisie.'; return; }
+      a.saveMany('indicateurs', recs, 'Chiffres Power BI ' + mo).then(function () { UI.closeModal(); UI.toast(recs.length + ' indicateur(s) enregistré(s).', 'ok'); a.render(); })
+        .catch(function (x) { err.textContent = x.message; });
+    });
+  };
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+
 /* ---- src/ui/views-admin.js ---- */
 /**
  * Écrans de pilotage et d'administration : P&L, rapports, imports, qualité des
@@ -4991,6 +5409,7 @@ pre.code { background: var(--line-2); padding: 10px; border-radius: var(--radius
   var parTab = 'general';
   var PAR_TABS = {
     general: ['Général', 'general'], taux: ['Taux des coachs', 'taux_coach'], types: ['Types d\'activité', 'type_activite'], niveaux: ['Niveaux', 'niveau'],
+    objectifs: ['Objectifs', 'objectif'], indicateurs: ['Indicateurs Power BI', 'indicateur_club'],
     pointe: ['Heures de pointe', 'heures_pointe'], vacances: ['Vacances', 'vacances'], budget: ['Budget', 'budget'], categories: ['Catégories', null],
     terrains: ['Terrains', null], utilisateurs: ['Utilisateurs', null], permissions: ['Droits par rôle', null]
   };
@@ -5000,6 +5419,8 @@ pre.code { background: var(--line-2); padding: 10px; border-radius: var(--radius
     types: 'Catalogue des activités. Attributs : public=adulte|junior|mixte ; payant=oui|non ; famille=academie|decouverte|social|evenement|tournoi|prive. Archivé = plus proposé.',
     niveaux: 'Grille des 8 niveaux (indicatif Playtomic dans les attributs).',
     pointe: 'Plages de pointe par jour : Référence = 1 (lundi) … 7 (dimanche) ou « tous » ; Valeur = 17:00-22:00. Le reste des heures ouvertes est « creux ».',
+    objectifs: 'Objectifs : catégorie objectif. « seances_semaine » : Référence = code de l\'activité (padel_taster, afterwork, new_to_padel…), Valeur = séances par semaine, avec date d\'effet. « taux_penetration » : cible en %.',
+    indicateurs: 'Liste des indicateurs saisis depuis Power BI. Attributs : unite ; agregation = dernier (stock : membres, âge) ou somme (flux : réservations, nouveaux membres). Les chiffres eux-mêmes se saisissent dans Communauté & pénétration.',
     vacances: 'Périodes de vacances scolaires (FWB) pendant lesquelles les cycles sont suspendus : date d\'effet = début, date de fin = fin.',
     budget: 'Budget mensuel : Référence = AAAA-MM ; Clé = revenus_reconnus, encaissements, couts_coachs, couts_directs ou marge_brute ; Valeur = montant.'
   };

@@ -123,3 +123,42 @@ Les compteurs d'une séance viennent de la liste nominative (feuille Présences)
 ## 9. Traçabilité
 
 Chaque montant du P&L est construit à partir de lignes portant `source` (feuille) et `id` (ligne). L'écran **P&L → Détail** liste ces lignes et les exporte en CSV.
+
+## 10. Communauté et pénétration (`src/core/community.js`)
+
+### Programme gratuit
+
+Activités suivies : celles qui ont un objectif hebdomadaire (Paramètres → Objectifs) et toutes les activités encadrées gratuites. Objectifs confirmés le 01/11/2026 : **4 Padel Tasters d'1 h**, **2 Afterworks d'1 h 30** et **2 New to Padel Social Sessions d'1 h** par semaine.
+
+```
+semaines écoulées      = (jours entre le début de la période et min(fin de période, aujourd'hui) + 1) ÷ 7
+objectif de la période = objectif hebdomadaire × semaines écoulées
+atteinte               = séances réalisées ÷ objectif de la période
+atteinte globale       = séances réalisées des activités avec objectif ÷ Σ objectifs (les activités sans objectif sont listées à part)
+heures de terrain      = Σ durée de chaque séance réalisée × nombre de terrains utilisés
+part de l'occupation   = heures de terrain du programme ÷ heures disponibles des terrains
+nouveaux joueurs       = membres dont la toute première présence (toutes activités encadrées) est une activité gratuite de la période
+```
+Remplissage, présence, no-show, participations et participants uniques suivent les formules de la section 8.
+
+### Indicateurs Power BI (feuille Indicateurs_Club)
+
+Une ligne par indicateur, segment et période. Pour une période donnée, seules les lignes **entièrement comprises** dans la période sont retenues :
+
+- indicateur « stock » (`agregation=dernier` : membres du club, membres actifs padel, membres qui réservent, âge moyen) → valeur de la période la plus récente ;
+- indicateur « flux » (`agregation=somme` : réservations, heures réservées, nouveaux membres, participants aux événements) → somme des périodes, avec signalement si la période n'est que partiellement couverte.
+
+### Ratios
+
+| Indicateur | Formule |
+|---|---|
+| **Taux de pénétration padel** | membres ayant joué au padel sur la période ÷ membres du club |
+| Part des membres qui réservent | membres ayant réservé un terrain ÷ membres du club |
+| Pénétration des nouveaux membres | nouveaux membres ayant joué au padel ÷ nouveaux membres du club |
+| Réservations par membre | réservations de terrains ÷ membres ayant réservé |
+| Participation aux événements | participants aux événements ÷ membres actifs padel |
+| Nouveaux joueurs venus du programme gratuit | nouveaux joueurs recrutés par le programme (application) ÷ (nouveaux membres padel + membres existants ayant commencé, Power BI) |
+
+Sans chiffre Power BI pour la période, chaque ratio est « donnée indisponible ». Si Power BI fournit déjà son propre taux (`taux_penetration_powerbi`), il est affiché à côté du taux recalculé pour contrôle.
+
+> **À confirmer avec Power BI** : la définition exacte de « membre actif padel » (a réservé ? a joué au moins une fois ? sur quelle période ?). La liste des indicateurs est modifiable dans Paramètres → Indicateurs Power BI pour s'aligner sur les noms du rapport Power BI.

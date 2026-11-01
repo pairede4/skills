@@ -303,7 +303,7 @@
       general: 'Règle générale', taux_coach: 'Taux horaire coach', type_activite: "Type d'activité",
       niveau: 'Niveau', heures_pointe: 'Heures de pointe', vacances: 'Vacances scolaires (cycles suspendus)',
       budget: 'Budget', categorie_depense: 'Catégorie de dépense', categorie_revenu: 'Catégorie de revenu',
-      permission: 'Permission (surcharge par rôle)'
+      permission: 'Permission (surcharge par rôle)', indicateur_club: 'Indicateur club (Power BI)', objectif: 'Objectif (programme gratuit, KPI)'
     },
     role: { admin: 'Administrateur', coach: 'Coach', reception: 'Réception', manager: 'Manager' },
     lieu: { indoor: 'Indoor', outdoor: 'Outdoor' },
@@ -335,7 +335,8 @@
       jamais: 'Jamais', moins_1_mois: "Moins d'une fois par mois", '1_3_mois': '1 à 3 fois par mois',
       '1_semaine': 'Une fois par semaine', '2_plus_semaine': 'Deux fois ou plus par semaine'
     },
-    source_satisfaction: { formulaire: 'Formulaire app', papier: 'Papier', import: 'Import' }
+    source_satisfaction: { formulaire: 'Formulaire app', papier: 'Papier', import: 'Import' },
+    segment_kpi: { total: 'Total', adulte: 'Adultes', junior: 'Juniors' }
   };
 
   function c(n, t, req, label, extra) {
@@ -670,6 +671,22 @@
       ]
     },
     {
+      key: 'indicateurs', tab: 'Indicateurs_Club', label: 'Indicateurs club (Power BI)', prefix: 'KPI',
+      extra: true,
+      desc: 'Feuille ajoutée : chiffres du club transmis par Power BI (membres, joueurs de padel, réservations, âge moyen…), une ligne par indicateur et par période. Sert au taux de pénétration et aux rapports pour Laurent. Rien n\'est estimé : une période sans ligne est « donnée indisponible ».',
+      naturalKey: ['indicateur', 'segment', 'date_debut', 'date_fin'],
+      cols: [
+        c('id', 'id', true, 'ID'),
+        c('date_debut', 'date', true, 'Début de la période'),
+        c('date_fin', 'date', true, 'Fin de la période'),
+        c('indicateur', 'enum', true, 'Indicateur', { enumParam: 'indicateur_club' }),
+        c('segment', 'enum', true, 'Segment', { enumName: 'segment_kpi' }),
+        c('valeur', 'number', true, 'Valeur'),
+        c('source', 'text', false, 'Source', { help: 'Ex. Power BI – rapport Membres, export du 05/12/2026.' }),
+        c('commentaire', 'text', false, 'Commentaire')
+      ]
+    },
+    {
       key: 'imports', tab: 'Imports', label: 'Imports', prefix: 'IMP',
       desc: 'Traçabilité de chaque import (source, date, auteur, résultat). Annuler un import archive toutes ses lignes.',
       naturalKey: ['id'],
@@ -767,6 +784,25 @@
       p('type_activite', t[0], t[1], { libelle: t[1], attributs: t[2], statut: t[0] === 'clinic' ? 'archive' : 'actif',
         description: t[0] === 'clinic' ? 'Pas encore actives : ne rien annoncer avant publication.' : (t[0] === 'padel_physical' ? 'Ponctuel ; anciennes références à ne pas généraliser.' : '') });
     });
+    // Indicateurs club (Power BI). attributs : unite ; agregation = dernier (stock, ex. nombre de membres) ou somme (flux).
+    [
+      ['membres_club_total', 'Membres du club (total)', 'unite=membres; agregation=dernier'],
+      ['membres_padel_actifs', 'Membres ayant joué au padel sur la période', 'unite=membres; agregation=dernier'],
+      ['membres_reservants', 'Membres ayant réservé un terrain sur la période', 'unite=membres; agregation=dernier'],
+      ['reservations_terrains', 'Réservations de terrains', 'unite=réservations; agregation=somme'],
+      ['heures_reservees', 'Heures de terrain réservées', 'unite=heures; agregation=somme'],
+      ['nouveaux_membres_club', 'Nouveaux membres du club', 'unite=membres; agregation=somme'],
+      ['nouveaux_membres_padel', 'Nouveaux membres ayant joué au padel', 'unite=membres; agregation=somme'],
+      ['nouveaux_joueurs_padel', 'Membres existants ayant commencé le padel', 'unite=membres; agregation=somme'],
+      ['age_moyen_padel', 'Âge moyen des joueurs de padel', 'unite=ans; agregation=dernier'],
+      ['age_moyen_club', 'Âge moyen des membres du club', 'unite=ans; agregation=dernier'],
+      ['participants_evenements', 'Participants aux événements padel', 'unite=personnes; agregation=somme'],
+      ['taux_penetration_powerbi', 'Taux de pénétration (calculé par Power BI)', 'unite=pourcent; agregation=dernier']
+    ].forEach(function (k) { p('indicateur_club', k[0], k[1], { libelle: k[1], attributs: k[2], source: 'Liste proposée – à aligner sur Power BI' }); });
+    // Objectifs du programme gratuit (séances par semaine), confirmés par Anthony le 01/11/2026.
+    [['padel_taster', '4', '4 Padel Tasters d\'1 h par semaine'], ['afterwork', '2', '2 Afterworks d\'1 h 30 par semaine'], ['new_to_padel', '2', '2 New to Padel Social Sessions d\'1 h par semaine']]
+      .forEach(function (o) { p('objectif', 'seances_semaine', o[1], { reference: o[0], libelle: o[2], date_effet: '2026-08-31', source: 'Confirmé par Anthony (01/11/2026)' }); });
+    p('objectif', 'taux_penetration', '', { libelle: 'Objectif de taux de pénétration (%)', source: 'À FIXER', description: 'Cible à atteindre, en %.' });
     ['materiel', 'prix_recompenses', 'catering', 'evenement', 'autre'].forEach(function (k) {
       p('categorie_depense', k, { materiel: 'Matériel', prix_recompenses: 'Prix et récompenses', catering: 'Catering', evenement: 'Coûts d\'événement', autre: 'Autre' }[k]);
     });
@@ -847,6 +883,7 @@
     'rapports.export': 'Exporter les rapports (PDF, CSV)',
     'qualite.view': 'Voir la qualité des données',
     'imports.run': 'Importer des fichiers et annuler un import',
+    'indicateurs.edit': 'Saisir les indicateurs club (Power BI)',
     'parametres.view': 'Voir les paramètres',
     'parametres.edit': 'Modifier les paramètres (tarifs, taux, règles)',
     'utilisateurs.edit': 'Gérer les utilisateurs et les rôles',
@@ -890,7 +927,7 @@
     seances: ['seances.edit', 'seances.edit_own'], inscriptions: ['inscriptions.edit'], presences: ['presences.edit'],
     heures: ['heures.own', 'heures.validate', 'heures.pay'], paiements: ['paiements.edit'], depenses: ['depenses.edit'],
     evenements: ['evenements.edit'], satisfaction: ['satisfaction.edit'], occupation: ['terrains.edit'],
-    imports: ['imports.run'], audit: []
+    imports: ['imports.run'], indicateurs: ['indicateurs.edit'], audit: []
   };
   /** Permission requise pour lire une feuille. */
   var READ = {
@@ -901,7 +938,7 @@
     presences: ['seances.view', 'dashboard.view'], heures: ['heures.own', 'heures.view_all'],
     paiements: ['paiements.view', 'pnl.view'], depenses: ['depenses.view', 'pnl.view'],
     evenements: ['evenements.view', 'dashboard.view'], satisfaction: ['satisfaction.view'],
-    occupation: ['terrains.view'], imports: ['imports.run'], audit: ['audit.view']
+    occupation: ['terrains.view'], indicateurs: ['dashboard.view', 'rapports.view'], imports: ['imports.run'], audit: ['audit.view']
   };
 
   function canRead(perms, sheetKey) { return (READ[sheetKey] || []).some(function (p) { return perms[p]; }); }

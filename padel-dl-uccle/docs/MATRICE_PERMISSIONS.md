@@ -34,6 +34,7 @@
 | Exporter les rapports (PDF, CSV) | `rapports.export` | ✓ | – | – | ✓ |
 | Voir la qualité des données | `qualite.view` | ✓ | – | – | ✓ |
 | Importer des fichiers et annuler un import | `imports.run` | ✓ | – | – | – |
+| Saisir les indicateurs club (Power BI) | `indicateurs.edit` | ✓ | – | – | – |
 | Voir les paramètres | `parametres.view` | ✓ | – | – | – |
 | Modifier les paramètres (tarifs, taux, règles) | `parametres.edit` | ✓ | – | – | – |
 | Gérer les utilisateurs et les rôles | `utilisateurs.edit` | ✓ | – | – | – |

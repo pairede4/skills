@@ -144,6 +144,7 @@
       var noOcc = D.occupation.length === 0;
       if (noOcc) add('PE2', 'attention', 'periodes', 'Aucune réservation libre importée (exports ABS / application) : l\'occupation ne reflète que les activités encadrées.', 'Occupation_Terrains');
     }
+    if (!D.indicateurs.length) add('PE4', 'attention', 'periodes', 'Aucun chiffre Power BI encodé : taux de pénétration, membres qui réservent et âge moyen indisponibles.', 'Indicateurs_Club');
     if (!D.satisfaction.length) add('PE3', 'info', 'periodes', 'Aucun avis membre : satisfaction et NPS indisponibles.', 'Satisfaction');
 
     var order = { bloquant: 0, attention: 1, info: 2 };

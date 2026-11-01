@@ -33,7 +33,7 @@ Les fichiers sont dans le dossier `dist/apps-script/` du projet.
 
 1. En haut, choisissez la fonction **`setupSpreadsheet`**, puis **Exécuter**.
 2. Google demande une autorisation : choisissez le compte d'Anthony → « Paramètres avancés » → « Accéder au projet » → **Autoriser**. (Écran normal pour un script personnel non publié sur le Marketplace.)
-3. Le classeur contient désormais 17 onglets et les valeurs confirmées : ouverture indoor le 31/08/2026, six terrains ouverts de 8 h à 21 h, Gilles (coach, 35 €/h depuis le 31/08/2026), offres collectives adulte et junior à 25 € par personne pour 1 h et 35 € pour 1 h 30, montants TVAC. Anthony est administrateur.
+3. Le classeur contient désormais 18 onglets et les valeurs confirmées : ouverture indoor le 31/08/2026, six terrains ouverts de 8 h à 21 h, Gilles (coach, 35 €/h depuis le 31/08/2026), offres collectives adulte et junior à 25 € par personne pour 1 h et 35 € pour 1 h 30, montants TVAC. Anthony est administrateur.
 
 Autorisations demandées et pourquoi :
 

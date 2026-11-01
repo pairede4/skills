@@ -29,7 +29,7 @@ Prérequis : Node.js 18 ou plus récent. Aucune dépendance npm n'est nécessair
 ```bash
 npm run build      # construit dist/demo, dist/apps-script et docs/STRUCTURE_GOOGLE_SHEETS.md, docs/MATRICE_PERMISSIONS.md
 npm test           # build + tests unitaires (calculs, qualité, import, droits, serveur simulé)
-npm run test:e2e   # tests navigateur : 17 écrans × 4 rôles, iPhone + ordinateur, parcours complets
+npm run test:e2e   # tests navigateur : 18 écrans × 4 rôles, iPhone + ordinateur, parcours complets
 npm run serve      # démo sur http://localhost:8080
 ```
 

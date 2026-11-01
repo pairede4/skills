@@ -2,7 +2,7 @@
 
 > Fichier généré par `node scripts/build.js` à partir de `src/core/schema.js`. Ne pas modifier à la main.
 
-Le classeur contient 17 onglets. La fonction `setupSpreadsheet()` (Apps Script) les crée avec leurs en-têtes, listes déroulantes et protections.
+Le classeur contient 18 onglets. La fonction `setupSpreadsheet()` (Apps Script) les crée avec leurs en-têtes, listes déroulantes et protections.
 
 Règles communes :
 
@@ -28,6 +28,7 @@ Règles communes :
 - [Événements](#evenements)
 - [Satisfaction](#satisfaction)
 - [Occupation_Terrains](#occupation_terrains) *(ajoutée au modèle demandé)*
+- [Indicateurs_Club](#indicateurs_club) *(ajoutée au modèle demandé)*
 - [Imports](#imports)
 - [Journal_Audit](#journal_audit)
 
@@ -40,7 +41,7 @@ Clé de détection des doublons : `categorie + cle + reference + date_effet`
 | Colonne | Libellé | Type | Obligatoire | Règle de validation | Relation |
 |---|---|---|---|---|---|
 | `id` | ID | Identifiant (texte unique) | Oui |  |  |
-| `categorie` | Catégorie | Liste de valeurs | Oui | valeurs : `general`, `taux_coach`, `type_activite`, `niveau`, `heures_pointe`, `vacances`, `budget`, `categorie_depense`, `categorie_revenu`, `permission` |  |
+| `categorie` | Catégorie | Liste de valeurs | Oui | valeurs : `general`, `taux_coach`, `type_activite`, `niveau`, `heures_pointe`, `vacances`, `budget`, `categorie_depense`, `categorie_revenu`, `permission`, `indicateur_club`, `objectif` |  |
 | `cle` | Clé | Texte | Oui | Ex. date_ouverture_indoor, tournoi, 3… |  |
 | `reference` | Référence | Texte | Non | ID du coach (taux), jour 1-7 (heures de pointe), mois AAAA-MM (budget), rôle (permission). |  |
 | `valeur` | Valeur | Texte | Non | Vide = inconnu. Jamais remplacé par 0. |  |
@@ -464,6 +465,29 @@ Clé de détection des doublons : `terrain_id + date + heure_debut + type + refe
 | `modifie_le` | Modifié le | Texte | Non |  |  |
 | `modifie_par` | Modifié par | Texte | Non |  |  |
 
+## Indicateurs_Club
+
+Feuille ajoutée : chiffres du club transmis par Power BI (membres, joueurs de padel, réservations, âge moyen…), une ligne par indicateur et par période. Sert au taux de pénétration et aux rapports pour Laurent. Rien n'est estimé : une période sans ligne est « donnée indisponible ».
+
+Clé de détection des doublons : `indicateur + segment + date_debut + date_fin`
+
+| Colonne | Libellé | Type | Obligatoire | Règle de validation | Relation |
+|---|---|---|---|---|---|
+| `id` | ID | Identifiant (texte unique) | Oui |  |  |
+| `date_debut` | Début de la période | Date (AAAA-MM-JJ) | Oui |  |  |
+| `date_fin` | Fin de la période | Date (AAAA-MM-JJ) | Oui |  |  |
+| `indicateur` | Indicateur | Liste de valeurs | Oui | valeurs configurables (Paramètres → `indicateur_club`) |  |
+| `segment` | Segment | Liste de valeurs | Oui | valeurs : `total`, `adulte`, `junior` |  |
+| `valeur` | Valeur | Nombre décimal | Oui |  |  |
+| `source` | Source | Texte | Non | Ex. Power BI – rapport Membres, export du 05/12/2026. |  |
+| `commentaire` | Commentaire | Texte | Non |  |  |
+| `archive` | Archivé | Booléen (TRUE/FALSE) | Non | TRUE = ligne archivée (jamais supprimée). |  |
+| `import_id` | Import d'origine | Référence (ID) | Non |  | → Imports.id |
+| `cree_le` | Créé le | Texte | Non |  |  |
+| `cree_par` | Créé par | Texte | Non |  |  |
+| `modifie_le` | Modifié le | Texte | Non |  |  |
+| `modifie_par` | Modifié par | Texte | Non |  |  |
+
 ## Imports
 
 Traçabilité de chaque import (source, date, auteur, résultat). Annuler un import archive toutes ses lignes.
@@ -549,6 +573,22 @@ Chargées par `setupSpreadsheet()` depuis le cadrage du 01/11/2026. Les valeurs 
 | type_activite | `padel_physical` |  | Padel + Physical Training | Cadrage 01/11/2026 – Ponctuel ; anciennes références à ne pas généraliser. |
 | type_activite | `clinic` |  | Clinic | Cadrage 01/11/2026 – Pas encore actives : ne rien annoncer avant publication. (archivé) |
 | type_activite | `cours_prive` |  | Cours privé (hors P&L) | Cadrage 01/11/2026 |
+| indicateur_club | `membres_club_total` |  | Membres du club (total) | Liste proposée – à aligner sur Power BI |
+| indicateur_club | `membres_padel_actifs` |  | Membres ayant joué au padel sur la période | Liste proposée – à aligner sur Power BI |
+| indicateur_club | `membres_reservants` |  | Membres ayant réservé un terrain sur la période | Liste proposée – à aligner sur Power BI |
+| indicateur_club | `reservations_terrains` |  | Réservations de terrains | Liste proposée – à aligner sur Power BI |
+| indicateur_club | `heures_reservees` |  | Heures de terrain réservées | Liste proposée – à aligner sur Power BI |
+| indicateur_club | `nouveaux_membres_club` |  | Nouveaux membres du club | Liste proposée – à aligner sur Power BI |
+| indicateur_club | `nouveaux_membres_padel` |  | Nouveaux membres ayant joué au padel | Liste proposée – à aligner sur Power BI |
+| indicateur_club | `nouveaux_joueurs_padel` |  | Membres existants ayant commencé le padel | Liste proposée – à aligner sur Power BI |
+| indicateur_club | `age_moyen_padel` |  | Âge moyen des joueurs de padel | Liste proposée – à aligner sur Power BI |
+| indicateur_club | `age_moyen_club` |  | Âge moyen des membres du club | Liste proposée – à aligner sur Power BI |
+| indicateur_club | `participants_evenements` |  | Participants aux événements padel | Liste proposée – à aligner sur Power BI |
+| indicateur_club | `taux_penetration_powerbi` |  | Taux de pénétration (calculé par Power BI) | Liste proposée – à aligner sur Power BI |
+| objectif | `seances_semaine` | padel_taster | 4 | Confirmé par Anthony (01/11/2026) |
+| objectif | `seances_semaine` | afterwork | 2 | Confirmé par Anthony (01/11/2026) |
+| objectif | `seances_semaine` | new_to_padel | 2 | Confirmé par Anthony (01/11/2026) |
+| objectif | `taux_penetration` |  | *(vide)* | À FIXER – Cible à atteindre, en %. |
 | categorie_depense | `materiel` |  | Matériel | Cadrage 01/11/2026 |
 | categorie_depense | `prix_recompenses` |  | Prix et récompenses | Cadrage 01/11/2026 |
 | categorie_depense | `catering` |  | Catering | Cadrage 01/11/2026 |

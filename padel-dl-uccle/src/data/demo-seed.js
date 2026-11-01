@@ -40,7 +40,7 @@
     // ---------------------------------------------------------- Paramètres
     schema.INITIAL_PARAMETRES.forEach(function (p) {
       var r = Object.assign({}, p, { id: id('PAR') });
-      if (r.categorie === 'taux_coach') return;
+      if (r.categorie === 'taux_coach' || (r.categorie === 'objectif' && r.cle === 'taux_penetration')) return;
       add('parametres', r);
     });
     [1, 2, 3, 4, 5].forEach(function (d) { add('parametres', { id: id('PAR'), categorie: 'heures_pointe', cle: 'soir', reference: String(d), valeur: '17:00-22:00', statut: 'actif', source: FICTIF, libelle: 'Soirée', date_effet: '', date_fin: '', attributs: '', description: '' }); });
@@ -177,8 +177,8 @@
           hours(U.b, sq, hourStatus(d), { nb_participants: sq.nb_inscrits, nb_presents: sq.nb_presents });
         }
       }
-      // Afterwork un vendredi sur deux, 3 terrains indoor
-      if (wd === 5 && u.daysBetween(OPEN, d) % 14 === 4) {
+      // Afterwork mercredi et vendredi (objectif 2/semaine), 3 terrains indoor ; une semaine manquée (fictif)
+      if ((wd === 3 || wd === 5) && !(d >= '2026-10-12' && d <= '2026-10-18')) {
         var aw = seance({ date: d, heure_debut: '19:00', heure_fin: '20:30', type_activite: 'afterwork', terrains: 'TER-1,TER-2,TER-3', coach_id: U.a.id, capacite: 12, payant: 'non', statut: past ? 'realisee' : 'planifiee',
           incident: d === '2026-09-26' ? 'Éclairage du terrain Indoor 2 défaillant 20 min (fictif)' : '' });
         if (past) { var na = int(7, 12); aw.nb_inscrits = na; aw.nb_presents = na - int(0, 2); aw.nb_absents = 0; aw.nb_no_shows = na - aw.nb_presents; aw.nb_annulations = int(0, 2); hours(U.a, aw, hourStatus(d), { nb_participants: na, nb_presents: aw.nb_presents }); }
@@ -248,6 +248,15 @@
         frequence_apres: pick(['1_3_mois', '1_semaine', '1_semaine', '2_plus_semaine']), activite_preferee: pick(acts), amelioration: pick(improvements), recommandation: reco, commentaire: '', source: 'formulaire' }, 'formulaire');
     }
     db.satisfaction.filter(function (r) { return r.type_activite === 'tournoi'; }).slice(0, 4).forEach(function (r) { r.evenement_id = t1.id; r.date = t1.date; });
+
+    // ---------------------------------------------------------- Indicateurs Power BI (FICTIFS)
+    [['2026-09', { membres_club_total: 2140, membres_padel_actifs: 286, membres_reservants: 241, reservations_terrains: 1310, heures_reservees: 1965, nouveaux_membres_club: 48, nouveaux_membres_padel: 17, nouveaux_joueurs_padel: 22, age_moyen_padel: 41.2, age_moyen_club: 44.8, participants_evenements: 58 }],
+     ['2026-10', { membres_club_total: 2165, membres_padel_actifs: 318, membres_reservants: 266, reservations_terrains: 1402, heures_reservees: 2103, nouveaux_membres_club: 39, nouveaux_membres_padel: 16, nouveaux_joueurs_padel: 19, age_moyen_padel: 40.6, age_moyen_club: 44.9, participants_evenements: 45 }]]
+      .forEach(function (mth) {
+        var from = mth[0] + '-01', to = u.endOfMonth(from);
+        Object.keys(mth[1]).forEach(function (k) { add('indicateurs', { id: id('KPI'), date_debut: from, date_fin: to, indicateur: k, segment: 'total', valeur: mth[1][k], source: 'Power BI (FICTIF – démo)', commentaire: '' }); });
+      });
+    add('parametres', { id: id('PAR'), categorie: 'objectif', cle: 'taux_penetration', reference: '', valeur: '16', libelle: 'Objectif de taux de pénétration (%)', date_effet: '', date_fin: '', statut: 'actif', source: FICTIF, attributs: '', description: '' });
 
     // ---------------------------------------------------------- Journal
     add('audit', { id: id('AUD'), date: '2026-10-31T18:00:00.000Z', utilisateur: 'admin@exemple.invalid', role: 'admin', action: 'import', feuille: 'Occupation_Terrains', ligne_id: 'IMP-0001', avant: '', apres: '', motif: 'Import simulé (démo)' });

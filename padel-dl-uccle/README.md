@@ -16,7 +16,7 @@ Application web responsive (iPhone et ordinateur), en français, pour piloter le
 | # | Livrable | Emplacement |
 |---|---|---|
 | 1 | Application fonctionnelle | `dist/apps-script/` (production), `dist/demo/index.html` (démo) ; sources dans `src/` et `apps-script/` |
-| 2 | Structure Google Sheets (17 onglets, colonnes, types, obligations, validations, relations) | [docs/STRUCTURE_GOOGLE_SHEETS.md](docs/STRUCTURE_GOOGLE_SHEETS.md) – créée automatiquement par `setupSpreadsheet()` |
+| 2 | Structure Google Sheets (18 onglets, colonnes, types, obligations, validations, relations) | [docs/STRUCTURE_GOOGLE_SHEETS.md](docs/STRUCTURE_GOOGLE_SHEETS.md) – créée automatiquement par `setupSpreadsheet()` |
 | 3 | Jeu de données fictif clairement identifié | `src/data/demo-seed.js` (génération déterministe) |
 | 4 | Assistant d'import CSV / Excel | Écran « Imports » ; logique `src/core/importer.js` |
 | 5 | Quatre modèles de rapports | Écran « Rapports » ; `src/core/reports.js` ; exemples PDF fictifs dans `docs/exemples/` |
@@ -32,14 +32,14 @@ Application web responsive (iPhone et ordinateur), en français, pour piloter le
 
 ## Écrans
 
-Tableau de bord · Séances (séance rapide, présences, génération des séances de cycle) · Heures coachs (saisie mobile, validation, paiement, synthèse) · Paiements · Terrains · Académies (cycles, inscriptions, offres) · Événements · Satisfaction / NPS · P&L (traçable ligne à ligne) · Dépenses · Rapports · Membres · Imports · Qualité des données · Paramètres (règles, taux historisés, types, niveaux, pointe, vacances, budget, terrains, utilisateurs, droits) · Journal d'audit · Aide.
+Tableau de bord · **Communauté & pénétration** (programme gratuit vs objectifs, indicateurs Power BI, taux de pénétration) · Séances (séance rapide, présences, génération des séances de cycle) · Heures coachs (saisie mobile, validation, paiement, synthèse) · Paiements · Terrains · Académies (cycles, inscriptions, offres) · Événements · Satisfaction / NPS · P&L (traçable ligne à ligne) · Dépenses · Rapports · Membres · Imports · Qualité des données · Paramètres (règles, taux historisés, types, niveaux, pointe, vacances, budget, terrains, utilisateurs, droits) · Journal d'audit · Aide.
 
 ## Développement
 
 ```bash
 npm run build     # assemble dist/ et régénère la documentation de structure et de droits
-npm test          # 31 tests : calculs, qualité, import, droits, rapports, serveur Apps Script simulé
-npm run test:e2e  # Playwright : 17 écrans × 4 rôles × (iPhone, desktop) + parcours complets
+npm test          # 36 tests : calculs, qualité, import, droits, rapports, serveur Apps Script simulé
+npm run test:e2e  # Playwright : 18 écrans × 4 rôles × (iPhone, desktop) + parcours complets
 npm run serve     # démo sur http://localhost:8080
 ```
 

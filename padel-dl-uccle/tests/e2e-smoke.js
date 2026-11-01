@@ -14,10 +14,10 @@ const SHOTS = path.join(__dirname, 'screenshots');
 fs.mkdirSync(SHOTS, { recursive: true });
 
 const ROLES = [
-  { role: 'admin', user: 'USR-ADMIN', routes: ['dashboard', 'seances', 'heures', 'paiements', 'terrains', 'academies', 'evenements', 'satisfaction', 'pnl', 'depenses', 'rapports', 'membres', 'imports', 'qualite', 'parametres', 'journal', 'aide'] },
+  { role: 'admin', user: 'USR-ADMIN', routes: ['dashboard', 'communaute', 'seances', 'heures', 'paiements', 'terrains', 'academies', 'evenements', 'satisfaction', 'pnl', 'depenses', 'rapports', 'membres', 'imports', 'qualite', 'parametres', 'journal', 'aide'] },
   { role: 'coach', user: 'USR-COACHA', routes: ['heures', 'seances', 'evenements', 'satisfaction', 'membres', 'aide'], forbidden: ['pnl', 'parametres'] },
   { role: 'reception', user: 'USR-RECEP', routes: ['paiements', 'academies', 'seances', 'membres', 'aide'], forbidden: ['pnl', 'parametres', 'heures'] },
-  { role: 'manager', user: 'USR-MANAG', routes: ['dashboard', 'terrains', 'pnl', 'rapports', 'qualite', 'satisfaction'], forbidden: ['imports', 'parametres'] }
+  { role: 'manager', user: 'USR-MANAG', routes: ['dashboard', 'communaute', 'terrains', 'pnl', 'rapports', 'qualite', 'satisfaction'], forbidden: ['imports', 'parametres'] }
 ];
 
 (async () => {

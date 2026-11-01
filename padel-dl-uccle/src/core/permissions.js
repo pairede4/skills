@@ -45,6 +45,7 @@
     'rapports.export': 'Exporter les rapports (PDF, CSV)',
     'qualite.view': 'Voir la qualité des données',
     'imports.run': 'Importer des fichiers et annuler un import',
+    'indicateurs.edit': 'Saisir les indicateurs club (Power BI)',
     'parametres.view': 'Voir les paramètres',
     'parametres.edit': 'Modifier les paramètres (tarifs, taux, règles)',
     'utilisateurs.edit': 'Gérer les utilisateurs et les rôles',
@@ -88,7 +89,7 @@
     seances: ['seances.edit', 'seances.edit_own'], inscriptions: ['inscriptions.edit'], presences: ['presences.edit'],
     heures: ['heures.own', 'heures.validate', 'heures.pay'], paiements: ['paiements.edit'], depenses: ['depenses.edit'],
     evenements: ['evenements.edit'], satisfaction: ['satisfaction.edit'], occupation: ['terrains.edit'],
-    imports: ['imports.run'], audit: []
+    imports: ['imports.run'], indicateurs: ['indicateurs.edit'], audit: []
   };
   /** Permission requise pour lire une feuille. */
   var READ = {
@@ -99,7 +100,7 @@
     presences: ['seances.view', 'dashboard.view'], heures: ['heures.own', 'heures.view_all'],
     paiements: ['paiements.view', 'pnl.view'], depenses: ['depenses.view', 'pnl.view'],
     evenements: ['evenements.view', 'dashboard.view'], satisfaction: ['satisfaction.view'],
-    occupation: ['terrains.view'], imports: ['imports.run'], audit: ['audit.view']
+    occupation: ['terrains.view'], indicateurs: ['dashboard.view', 'rapports.view'], imports: ['imports.run'], audit: ['audit.view']
   };
 
   function canRead(perms, sheetKey) { return (READ[sheetKey] || []).some(function (p) { return perms[p]; }); }

@@ -72,7 +72,8 @@ function makeEnv(owner) {
 test('serveur : installation, droits, verrouillage des heures, archivage, import, audit', () => {
   const env = makeEnv('anthony@exemple.invalid');
   const G = env.ctx;
-  assert.match(G.setupSpreadsheet(), /17 onglets/);
+  assert.match(G.setupSpreadsheet(), /18 onglets/);
+  assert.ok(env.sheets['Indicateurs_Club'], 'feuille des indicateurs Power BI');
   assert.ok(env.sheets['Paramètres'] && env.sheets['Journal_Audit'] && env.sheets['Occupation_Terrains']);
 
   let boot = G.api_bootstrap(null);

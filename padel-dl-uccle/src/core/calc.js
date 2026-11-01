@@ -32,7 +32,7 @@
   function context(db, today) {
     var ctx = { db: {}, today: today || u.parseDate(new Date()) };
     ['parametres', 'utilisateurs', 'terrains', 'membres', 'offres', 'cycles', 'seances', 'inscriptions', 'presences',
-      'heures', 'paiements', 'depenses', 'evenements', 'satisfaction', 'occupation', 'imports', 'audit']
+      'heures', 'paiements', 'depenses', 'evenements', 'satisfaction', 'occupation', 'indicateurs', 'imports', 'audit']
       .forEach(function (k) { ctx.db[k] = live(db[k]); });
     var D = ctx.db;
     ctx.params = D.parametres.filter(function (p) { return p.statut !== 'archive'; });

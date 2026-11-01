@@ -9,6 +9,7 @@
 
   var NAV = [
     { id: 'dashboard', label: 'Tableau de bord', icon: 'dashboard', perms: ['dashboard.view'] },
+    { id: 'communaute', label: 'Communauté & pénétration', icon: 'trend', perms: ['dashboard.view'] },
     { id: 'seances', label: 'Séances', icon: 'calendar', perms: ['seances.view'] },
     { id: 'heures', label: 'Heures coachs', icon: 'clock', perms: ['heures.own', 'heures.view_all'] },
     { id: 'paiements', label: 'Paiements', icon: 'receipt', perms: ['paiements.view'] },
@@ -154,7 +155,7 @@
       '<nav class="bottom-nav" aria-label="Navigation mobile">' + mobile.map(function (n) { return '<a href="#/' + n.id + '" class="' + (app.route === n.id ? 'active' : '') + '">' + icon(n.icon, 22) + '<span>' + e(shortLabel(n.label)) + '</span></a>'; }).join('') +
       (items.length > 4 ? '<button type="button" data-action="more-menu" class="' + (mobile.some(function (n) { return n.id === app.route; }) ? '' : 'active') + '">' + icon('more', 22) + '<span>Plus</span></button>' : '') + '</nav></div>';
   }
-  function shortLabel(l) { return { 'Tableau de bord': 'Accueil', 'Heures coachs': 'Heures', 'Qualité des données': 'Qualité' }[l] || l; }
+  function shortLabel(l) { return { 'Tableau de bord': 'Accueil', 'Heures coachs': 'Heures', 'Qualité des données': 'Qualité', 'Communauté & pénétration': 'Communauté' }[l] || l; }
 
   app.render = function () {
     var appEl = document.getElementById('app');

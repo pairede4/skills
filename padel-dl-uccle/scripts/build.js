@@ -16,8 +16,8 @@ const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 const write = (p, s) => { const f = path.join(ROOT, p); fs.mkdirSync(path.dirname(f), { recursive: true }); fs.writeFileSync(f, s); };
 
 const CORE = ['src/core/util.js', 'src/core/schema.js', 'src/core/permissions.js', 'src/core/calc.js', 'src/core/quality.js',
-  'src/core/importer.js', 'src/core/reports.js', 'src/core/rules.js'];
-const UI = ['src/data/store.js', 'src/ui/components.js', 'src/ui/app.js', 'src/ui/views-ops.js', 'src/ui/views-admin.js'];
+  'src/core/community.js', 'src/core/importer.js', 'src/core/reports.js', 'src/core/rules.js'];
+const UI = ['src/data/store.js', 'src/ui/components.js', 'src/ui/app.js', 'src/ui/views-ops.js', 'src/ui/views-community.js', 'src/ui/views-admin.js'];
 
 function bundle(files) { return files.map((f) => '/* ---- ' + f + ' ---- */\n' + read(f)).join('\n'); }
 

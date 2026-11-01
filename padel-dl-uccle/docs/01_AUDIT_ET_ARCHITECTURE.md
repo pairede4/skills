@@ -35,7 +35,7 @@ Aucun fichier de données réelles n'a été fourni. Tous les chiffres visibles 
 | C4 | Clinics | Listées dans les activités à suivre, mais « pas encore actives ». | Type d'activité créé en statut **archivé** (non proposé) ; réactivable dans Paramètres. |
 | C5 | Padel + Physical | « Anciennes références à ne pas généraliser. » | Aucun prix ni format par défaut ; chaque édition se saisit comme un événement. |
 | C6 | Tournois | « Un tournoi prévu chaque mois », statut gratuit/payant non précisé. | Aucun tournoi créé ; payant/gratuit à saisir par événement. |
-| C7 | Feuilles demandées vs besoins | Les réservations libres, heures bloquées et maintenances n'ont pas de feuille dans la liste demandée. | **Ajout d'une 17e feuille `Occupation_Terrains`**. Les taux coachs, types d'activité, niveaux, heures de pointe, vacances, budget et surcharges de droits vivent dans `Paramètres` (catégories distinctes, historisées par date d'effet). |
+| C7 | Feuilles demandées vs besoins | Les réservations libres, heures bloquées et maintenances n'ont pas de feuille dans la liste demandée. | **Ajout d'une 17e feuille `Occupation_Terrains`** et, pour les chiffres Power BI, d'une 18e feuille `Indicateurs_Club`. Les taux coachs, types d'activité, niveaux, heures de pointe, vacances, budget et surcharges de droits vivent dans `Paramètres` (catégories distinctes, historisées par date d'effet). |
 | C8 | Historique des niveaux | Demandé, sans feuille dédiée. | Chaque modification d'un membre est tracée (avant/après, auteur, date, motif) dans `Journal_Audit` ; le formulaire exige un motif lors d'un changement de niveau. |
 | C9 | Date du cadrage | Version datée du 1er novembre 2026. | Sans incidence. |
 
@@ -55,7 +55,7 @@ Voir [`HYPOTHESES_DONNEES_MANQUANTES_LIMITES.md`](HYPOTHESES_DONNEES_MANQUANTES_
  Code.gs + Shared.gs (serveur)  ──►  droits par rôle, validation, verrou d'écriture, journal d'audit
         │
         ▼
- Classeur Google Sheets (17 onglets) ──► sauvegarde quotidienne datée dans Drive
+ Classeur Google Sheets (18 onglets) ──► sauvegarde quotidienne datée dans Drive
 ```
 
 **Pourquoi Google Apps Script lié au classeur**
@@ -82,8 +82,8 @@ Voir [`HYPOTHESES_DONNEES_MANQUANTES_LIMITES.md`](HYPOTHESES_DONNEES_MANQUANTES_
 
 | Élément | État |
 |---|---|
-| Calculs (occupation, taux, reconnaissance des cycles, coûts historisés, P&L, NPS, qualité, import) | Testés : `npm test` (31 tests). |
+| Calculs (occupation, taux, reconnaissance des cycles, coûts historisés, P&L, NPS, qualité, import) | Testés : `npm test` (36 tests). |
 | Serveur Apps Script (droits, verrouillage des heures, import/annulation, archivage, audit, mode code) | Testé contre une **simulation** de Google Sheets en mémoire. |
-| Interface (17 écrans × 4 rôles, iPhone et ordinateur) | Testée dans Chromium : aucune erreur JS, aucun débordement horizontal ; parcours séance rapide, heures coach, validation, paiement, import, rapport. |
+| Interface (18 écrans × 4 rôles, iPhone et ordinateur) | Testée dans Chromium : aucune erreur JS, aucun débordement horizontal ; parcours séance rapide, heures coach, validation, paiement, import, rapport. |
 | **Connexion au vrai Google Sheets** | **Non testée** (aucun identifiant Google disponible dans cet environnement). À valider lors du premier déploiement en suivant le guide de connexion. |
 | Export PDF | Vérifié via l'impression Chromium (exemples dans `docs/exemples/`). Sur iPhone, l'export passe par Partager → Imprimer → PDF. |

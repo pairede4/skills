@@ -25,6 +25,11 @@
     var html = UI.periodBar();
     if (!calc.param(c, 'date_ouverture_indoor')) html += UI.notice('<strong>Date d\'ouverture indoor non renseignée.</strong> L\'historique n\'a pas de point de départ : renseignez-la dans Paramètres → Général.', 'warn');
     if (cur.occupancy.note) html += UI.notice(e(cur.occupancy.note), 'info');
+    var ciCur = Padel.community.clubIndicators(c, f), ciPrev = Padel.community.clubIndicators(c, a.filterObj({ from: pp.from, to: pp.to }));
+    var fpCur = Padel.community.freeProgram(c, f);
+    html += '<div class="kpi-group"><h3>Communauté <a class="sm" href="#/communaute">détail →</a></h3>' + UI.communityKpis(ciCur, ciPrev, true) +
+      '<div class="kpi-grid" style="margin-top:10px">' + UI.kpi({ label: 'Programme gratuit : objectif atteint', m: fpCur.total.atteinte, fmt: 'pct', sub: e(fpCur.total.realisees.v + ' séances réalisées') }) +
+      UI.kpi({ label: 'Nouveaux joueurs via le programme gratuit', m: fpCur.total.nouveaux }) + '</div></div>';
     html += '<div class="kpi-group"><h3>Terrains</h3><div class="kpi-grid">' +
       UI.kpi({ label: 'Heures disponibles', m: k.heuresDisponibles, fmt: 'h', prev: pk.heuresDisponibles }) +
       UI.kpi({ label: 'Heures réservées', m: k.heuresReservees, fmt: 'h', prev: pk.heuresReservees }) +

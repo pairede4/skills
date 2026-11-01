@@ -25,6 +25,13 @@ Rien n'est jamais supprimé : « Archiver » retire une ligne des calculs mais l
 - Qualité des données : traitez d'abord les lignes **bloquantes**.
 - Rapports → **A. Résumé hebdomadaire** ; rédigez les priorités de la semaine suivante.
 
+**Chaque mois : chiffres Power BI**
+1. Au club, ouvrir Power BI et noter les chiffres du mois écoulé (membres du club, membres qui ont joué au padel, membres qui ont réservé, réservations, nouveaux membres, âge moyen…).
+2. Communauté & pénétration → **Saisir les chiffres Power BI d'un mois** → choisir le mois → remplir ce qui est disponible → Enregistrer. Une case vide reste « inconnue ».
+3. Le taux de pénétration, la part des membres qui réservent et les évolutions apparaissent dans le tableau de bord et dans le bilan pour Laurent.
+
+**Programme gratuit** : Communauté & pénétration montre, pour les Tasters, Afterworks et New to Padel, les séances réalisées par rapport à l'objectif hebdomadaire, le remplissage, les participants, les nouveaux joueurs recrutés et la conversion des Tasters. Les inscriptions venant de l'application des membres s'importent via Imports → « Liste de présences ».
+
 **Chaque mois / trimestre**
 - Rapports → **B. Rapport financier mensuel**, **C. Bilan pour Laurent**, **D. Rapport trimestriel** → Imprimer / PDF ou CSV.
 
